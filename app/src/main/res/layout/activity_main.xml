@@ -5,11 +5,14 @@
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="353dp"
+        android:layout_height="233dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="29dp"
+        android:layout_marginTop="127dp"
         android:text="Click on mike to record audio."
-        android:layout_centerInParent="true"
-        android:textSize="18sp" />
+        android:textSize="20sp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
@@ -20,5 +23,20 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_mic"
         android:contentDescription="Mic" />
+
+    <TextView
+        android:id="@+id/tvEmotionList"
+        android:layout_width="332dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="428dp"
+        android:layout_marginEnd="19dp"
+        android:layout_marginBottom="112dp"
+        android:text="Emotion Detection"
+        android:textSize="18sp" />
 
 </RelativeLayout>

@@ -37,14 +37,27 @@ android {
 
 dependencies {
 
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
+    implementation (libs.kotlinx.coroutines.core)
+    implementation (libs.kotlinx.coroutines.android)
+
+    // Retrofit for HTTP requests
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    // Retrofit converter for JSON (Gson)
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Kotlin Coroutines for asynchronous code
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // (Optional) OkHttp Logging interceptor for debugging network calls
+    implementation ("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.litert.support.api)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
