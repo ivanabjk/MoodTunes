@@ -2,7 +2,6 @@ package com.example.moodtunes_v1
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
@@ -12,12 +11,15 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.moodtunes_v1.YouTubeFetcher.extractPlaylistId
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
+@OptIn(DelicateCoroutinesApi::class)
 class PlaylistActivity : AppCompatActivity() {
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_playlist)
@@ -34,6 +36,7 @@ class PlaylistActivity : AppCompatActivity() {
     private fun fetchPlaylists(mood: String, playlistContainer: LinearLayout) {
         val db = MoodTunesDatabase.getDatabase(this)
         val playlistDao = db.playlistDao()
+
 
         GlobalScope.launch(Dispatchers.Main) {
             val playlists = playlistDao.getPlaylistsByMood(mood)
@@ -61,7 +64,7 @@ class PlaylistActivity : AppCompatActivity() {
 
                     // Playlist Title TextView
                     val playlistTitleTextView = TextView(this@PlaylistActivity).apply {
-                        text = "$playlistTitle"
+                        text = playlistTitle
                         textSize = 16f // Smaller text size
                         setPadding(0, 0, 0, 10)
                     }

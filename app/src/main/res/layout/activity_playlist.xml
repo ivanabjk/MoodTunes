@@ -7,18 +7,6 @@
     android:autoLink="web"
     android:linksClickable="true">
 
-    <!--    <LinearLayout-->
-    <!--        android:id="@+id/playlistContainer"-->
-    <!--        android:layout_width="377dp"-->
-    <!--        android:layout_height="0dp"-->
-    <!--        android:layout_marginTop="136dp"-->
-    <!--        android:orientation="vertical"-->
-    <!--        android:padding="16dp"-->
-    <!--        app:layout_constraintEnd_toEndOf="parent"-->
-    <!--        app:layout_constraintHorizontal_bias="0.529"-->
-    <!--        app:layout_constraintStart_toStartOf="parent"-->
-    <!--        app:layout_constraintTop_toTopOf="parent" />-->
-
     <ScrollView
         android:layout_width="407dp"
         android:layout_height="651dp"
@@ -44,7 +32,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="TextView"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
