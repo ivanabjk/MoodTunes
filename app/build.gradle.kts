@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.devtools.ksp") version "1.9.0-1.0.13"
 }
 
 android {
@@ -51,6 +52,16 @@ dependencies {
 
     // (Optional) OkHttp Logging interceptor for debugging network calls
     implementation ("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
+
+    // Room DB
+    implementation ("androidx.room:room-runtime:2.6.0")
+    implementation ("androidx.room:room-ktx:2.6.0")
+    ksp ("androidx.room:room-compiler:2.6.0") // Replace kapt with ksp
+
+    //Glide for loading images
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
