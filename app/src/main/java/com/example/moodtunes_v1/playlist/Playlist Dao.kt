@@ -1,4 +1,4 @@
-package com.example.moodtunes_v1
+package com.example.moodtunes_v1.playlist
 
 import androidx.room.Dao
 import androidx.room.Insert

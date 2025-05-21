@@ -1,4 +1,4 @@
-package com.example.moodtunes_v1
+package com.example.moodtunes_v1.mood_detection
 
 import retrofit2.http.Body
 import retrofit2.http.Headers

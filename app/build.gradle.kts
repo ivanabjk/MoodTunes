@@ -2,11 +2,16 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.devtools.ksp") version "1.9.0-1.0.13"
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.moodtunes_v1"
     compileSdk = 35
+
+    viewBinding{
+        enable = true
+    }
 
     defaultConfig {
         applicationId = "com.example.moodtunes_v1"
@@ -58,8 +63,20 @@ dependencies {
     implementation ("androidx.room:room-ktx:2.6.0")
     ksp ("androidx.room:room-compiler:2.6.0") // Replace kapt with ksp
 
+
     //Glide for loading images
     implementation ("com.github.bumptech.glide:glide:4.15.1")
+
+    //Firebase authentication
+
+    implementation ("com.google.firebase:firebase-auth:21.1.0")
+    implementation(platform("com.google.firebase:firebase-bom:32.7.3"))
+    implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
+    //implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-analytics")
+
+    // Circle Image View
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
 
 
 

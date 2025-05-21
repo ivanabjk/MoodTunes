@@ -1,11 +1,11 @@
-package com.example.moodtunes_v1
+package com.example.moodtunes_v1.playlist
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Playlist::class], version = 1)
+@Database(entities = [Playlist::class], version = 1, exportSchema = false)
 abstract class MoodTunesDatabase : RoomDatabase() {
     abstract fun playlistDao(): PlaylistDao
 

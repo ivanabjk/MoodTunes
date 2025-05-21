@@ -1,4 +1,4 @@
-package com.example.moodtunes_v1
+package com.example.moodtunes_v1.mood_detection
 
 data class MoodResult(val mood: String, val confidence: Float)
 

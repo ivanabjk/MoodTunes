@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "906492811736",
+    "project_id": "moodtunes-c1347",
+    "storage_bucket": "moodtunes-c1347.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:906492811736:android:e880ca987ab8cb01897aad",
+        "android_client_info": {
+          "package_name": "com.example.moodtunes_v1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "906492811736-mrnnqe6pj4864ms82ktom61bl6t9lru4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSewoJuiaKacb4kmIOvuuprrvyZuCf1LE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "906492811736-mrnnqe6pj4864ms82ktom61bl6t9lru4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

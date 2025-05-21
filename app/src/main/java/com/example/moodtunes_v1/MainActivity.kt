@@ -3,14 +3,26 @@ package com.example.moodtunes_v1
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.example.moodtunes_v1.mood_detection.HfRequest
+import com.example.moodtunes_v1.mood_detection.HuggingFaceClient
+import com.example.moodtunes_v1.mood_detection.MoodClassifier
+import com.example.moodtunes_v1.mood_detection.MoodResult
+import com.example.moodtunes_v1.playlist.MoodTunesDatabase
+import com.example.moodtunes_v1.playlist.PlaylistActivity
+import com.example.moodtunes_v1.playlist.PlaylistLoader
+import com.example.moodtunes_v1.user_auth.AuthService
+import com.example.moodtunes_v1.user_auth.LoginActivity
+import com.example.moodtunes_v1.user_auth.ProfileActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -21,33 +33,73 @@ import kotlinx.coroutines.withContext
 class MainActivity : AppCompatActivity() {
 
     private lateinit var voiceToTextParser: VoiceToTextParser
-    private lateinit var textView: TextView
+    private lateinit var title: TextView
+    private lateinit var moodInput: EditText
     private lateinit var emotionsListTextView: TextView
     private lateinit var btnSeePlaylists: Button
     private lateinit var fab: FloatingActionButton
+    private lateinit var btnClearText: Button
+    private lateinit var btnAnalyzeMood: Button
+    private lateinit var btnLogin: Button
+    private lateinit var sharedPrefs: SharedPreferences
+    private lateinit var detectedMood: MoodResult
     private var canRecord = false
     private val scope = MainScope()
 
-    @SuppressLint("SetTextI18n")
+    private lateinit var authService: AuthService
+    //private lateinit var sharedPref: SharedPref
+
+    @SuppressLint("SetTextI18n", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        preloadPlaylists()
+        //Firebase authentication
+        authService = AuthService(this)
+        //sharedPref = SharedPref(this)
 
-        textView = findViewById(R.id.textView)
+        // Room DB and Playlist Loader
+        val db = MoodTunesDatabase.getDatabase(this)
+        val playlistDao = db.playlistDao()
+
+        PlaylistLoader.preloadPlaylists(scope, playlistDao)
+
+        title = findViewById(R.id.tvTitle)
+        moodInput = findViewById(R.id.etMoodInput)
         emotionsListTextView = findViewById(R.id.tvEmotionList)
         fab = findViewById(R.id.fab)
         btnSeePlaylists = findViewById(R.id.btnSeePlaylists)
+        btnClearText = findViewById(R.id.btnClearText)
+        btnAnalyzeMood = findViewById(R.id.btnAnalyzeMood)
+        btnLogin = findViewById(R.id.btnLogin)
+        detectedMood = MoodResult("Calm", 10.0F)
 
         voiceToTextParser = VoiceToTextParser(application)
+
+        // Shared Preferences
+        sharedPrefs = getSharedPreferences("MoodTunesPrefs", MODE_PRIVATE)
+
+        // Retrieve saved values
+        val savedMood = sharedPrefs.getString("savedMood", "") ?: ""
+        val savedDetectedMood = sharedPrefs.getString("lastDetectedMood", "") ?: ""
+        val savedEmotionResults = sharedPrefs.getString("emotionResults", "") ?: ""
+
+        // Display stored values if app wasn't fully restarted
+        if (savedInstanceState != null) {
+            moodInput.setText(savedMood)
+            emotionsListTextView.text = savedEmotionResults
+            btnSeePlaylists.isEnabled =
+                savedDetectedMood.isNotEmpty() // Enable button if mood was detected
+        }
+
+        //Mic recording
 
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             canRecord = isGranted
             if (!isGranted) {
-                textView.text = "Permission denied."
+                moodInput.hint = "Permission denied."
             }
         }
 
@@ -60,6 +112,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         fab.setOnClickListener {
+            clearMoodDetection()
             if (voiceToTextParser.state.value.isSpeaking) {
                 voiceToTextParser.stopListening()
             } else if (canRecord) {
@@ -67,31 +120,59 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Clear text button
+
+        btnClearText.setOnClickListener {
+            moodInput.setText("") // Clears input field
+            clearMoodDetection()
+            // Remove stored values
+            sharedPrefs.edit()
+                .remove("savedMood")
+                .remove("lastDetectedMood")
+                .remove("emotionResults")
+                .apply()
+
+        }
+
+        //Analyze mood button
+
+        btnAnalyzeMood.setOnClickListener {
+            val moodText = moodInput.text.toString().trim()
+            if (moodText.isNotEmpty()) {
+                analyzeEmotion(moodText)
+                btnSeePlaylists.isEnabled = true
+            }
+        }
+
+        // Login button
+        updateLoginButton()
+
+
+        // VoiceToTextParser
+
         scope.launch {
             voiceToTextParser.state.collect { state ->
-                if (state.isSpeaking) {
-                    textView.text = "Speaking..."
-                    fab.setImageResource(R.drawable.ic_stop)
-                } else {
-                    // Wait for spokenText to update before resetting
-                    if (state.spokenText.isNotEmpty()) {
-                        textView.text = state.spokenText
-                    } else {
-                        scope.launch {
-                            kotlinx.coroutines.delay(300) // Small delay before resetting
-                            if (textView.text == "Speaking...") {
-                                textView.text = "Click on mic to record audio."
-                            }
-                        }
+                when {
+                    state.isSpeaking -> {
+                        moodInput.setText("Speaking...")
+                        fab.setImageResource(R.drawable.ic_stop)
                     }
-                    fab.setImageResource(R.drawable.ic_mic)
-                }
-                state.error?.let {
-                    textView.text = it
+
+                    state.spokenText.isNotEmpty() -> {
+                        moodInput.setText(state.spokenText) // Set spoken text directly
+                        moodInput.setSelection(state.spokenText.length) // Cursor at end
+                        //analyzeEmotion(state.spokenText)
+                    }
+
+                    else -> {
+                        moodInput.hint = getString(R.string.moodInputHint) // Reset hint
+                        fab.setImageResource(R.drawable.ic_mic)
+                    }
                 }
 
-                if (!state.isSpeaking && state.spokenText.isNotEmpty()) {
-                    analyzeEmotion(state.spokenText)
+                // Handle errors
+                state.error?.let {
+                    moodInput.setText(it)
                 }
             }
         }
@@ -107,15 +188,6 @@ class MainActivity : AppCompatActivity() {
                 Log.d("HF_RESPONSE", response.toString())
                 val emotionList = response.firstOrNull() ?: emptyList()
 
-                /*// for the top emotion
-                val topEmotion = emotionList?.maxByOrNull { it.score }
-                emotionsListTextView.text = if (topEmotion != null){
-                    "Top emotion: ${topEmotion.label} (${String.format("%.2f", topEmotion.score ?: 0f)})"
-                }
-                else{
-                    "Emotion detection failed"
-                }*/
-
                 val topFive = emotionList.sortedByDescending { it.score }.take(5)
                 val emotionsText = topFive.joinToString("\n") {
                     "${it.label}: ${String.format("%.2f", it.score * 100)}%"
@@ -127,7 +199,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 // Mood Detection
-                val detectedMood = MoodClassifier.classifyMood(emotionList)
+                detectedMood = MoodClassifier.classifyMood(emotionList)
                 emotionsListTextView.text =
                     "${emotionsListTextView.text}\n\nDetected Mood: ${detectedMood.mood} (${
                         String.format(
@@ -136,125 +208,51 @@ class MainActivity : AppCompatActivity() {
                         )
                     }%)"
 
+                // Store detected mood & emotion list
+                sharedPrefs.edit()
+                    .putString("lastDetectedMood", detectedMood.mood)
+                    .putString("emotionResults", emotionsListTextView.text as String)
+                    .apply()
+
+
                 // Enable the button after mood detection
                 btnSeePlaylists.isEnabled = true
-                btnSeePlaylists.setOnClickListener {
-                    val intent = Intent(this@MainActivity, PlaylistActivity::class.java)
-                    intent.putExtra("MOOD", detectedMood.mood)
-                    startActivity(intent)
-                }
+                showPlaylist(detectedMood.mood)
 
 
             } catch (e: Exception) {
-                textView.text = "Error: ${e.message}"
+                moodInput.hint = "Error: ${e.message}"
                 Log.e("HF_ERROR", e.toString(), e)
             }
 
         }
     }
 
-    private fun preloadPlaylists() {
-        val db = MoodTunesDatabase.getDatabase(this)
-        val playlistDao = db.playlistDao()
+    private fun clearMoodDetection() {
+        emotionsListTextView.text = getString(R.string.emotion_detection)
+        btnSeePlaylists.isEnabled = false
+    }
 
-        scope.launch {
-            // Check if playlists already exist to avoid duplicates
-            var existingPlaylists = playlistDao.getPlaylistsByMood("Happy")
-            if (existingPlaylists.isEmpty()) {
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Happy",
-                        genre = "90s Pop Hits",
-                        url = "https://www.youtube.com/playlist?list=PL4C44E2875308A280"
-                    )
-                )
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Happy",
-                        genre = "Upbeat Songs",
-                        url = "https://www.youtube.com/playlist?list=PLx2Jv96o522ORh69HaDKClrz2Midqj8AE"
-                    )
-                )
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Happy",
-                        genre = "Rock Classics",
-                        url = "https://www.youtube.com/playlist?list=PLlLxrl-tbz-z3RqzMCOc_uQqdsbsAMGAq"
-                    )
-                )
-            }
-            existingPlaylists = playlistDao.getPlaylistsByMood("Sad")
-            if (existingPlaylists.isEmpty()) {
+    private fun showPlaylist(detectedMood: String) {
+        btnSeePlaylists.setOnClickListener {
+            val intent = Intent(this@MainActivity, PlaylistActivity::class.java)
+            intent.putExtra("MOOD", detectedMood)
+            startActivity(intent)
+        }
+    }
 
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Sad",
-                        genre = "Melancholy Tunes",
-                        url = "https://www.youtube.com/playlist?list=PLRJriok9d2H8eNwmsdh2MSYsBXFlzZU8H"
-                    )
-                )
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Sad",
-                        genre = "Soft Acoustic",
-                        url = "https://www.youtube.com/playlist?list=PLJH9QWrouDvTIqgnrB1XtwOkw4ZgQjaZq"
-                    )
-                )
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Sad",
-                        genre = "Emo Rock",
-                        url = "https://www.youtube.com/playlist?list=PLWwVW5BHHeYVM4rAKmNOjKAXn21R6XAKV"
-                    )
-                )
+    private fun updateLoginButton() {
+        if (authService.getEmail() != null) {
+            // User is logged in, go to Profile
+            btnLogin.text = "Profile"
+            btnLogin.setOnClickListener {
+                startActivity(Intent(this, ProfileActivity::class.java))
             }
-            existingPlaylists = playlistDao.getPlaylistsByMood("Angry")
-            if (existingPlaylists.isEmpty()) {
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Angry",
-                        genre = "Heavy Metal",
-                        url = "https://www.youtube.com/playlist?list=PLqrHHabBzX0nY0NU5xFJ6NDYR1R-jopi0"
-                    )
-                )
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Angry",
-                        genre = "Techno Rage",
-                        url = "https://www.youtube.com/playlist?list=PLfF4wIXCvi2NJOY808YLGmcd3AABPs1__"
-                    )
-                )
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Angry",
-                        genre = "Hardcore Punk",
-                        url = "https://www.youtube.com/playlist?list=PLYFbDTv39GlnLFu6rJeNRCAlP2dTuiP3C"
-                    )
-                )
-            }
-            existingPlaylists = playlistDao.getPlaylistsByMood("Calm")
-            if (existingPlaylists.isEmpty()) {
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Calm",
-                        genre = "Ambient Sounds",
-                        url = "https://www.youtube.com/playlist?list=PLQ_PIlf6OzqIq5aQe0uTHBmli1Nc1HTpB"
-                    )
-                )
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Calm",
-                        genre = "Lo-Fi Beats",
-                        url = "https://www.youtube.com/playlist?list=PLOzDu-MXXLlj7croDcwz33c-a5rpNEBNe"
-                    )
-                )
-                playlistDao.insertPlaylist(
-                    Playlist(
-                        mood = "Calm",
-                        genre = "Classical Relaxation",
-                        url = "https://www.youtube.com/playlist?list=PLW68_wbsDJYmg51TTOrpPWG0NfZL8SU6I"
-                    )
-                )
+        } else {
+            // Not logged in, go to Login
+            btnLogin.text = "Login"
+            btnLogin.setOnClickListener {
+                startActivity(Intent(this, LoginActivity::class.java))
             }
         }
     }
@@ -263,4 +261,36 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         scope.cancel()
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("tempMood", moodInput.text.toString())
+        outState.putString("emotionResults", emotionsListTextView.text.toString())
+        outState.putBoolean("playlistButtonEnabled", btnSeePlaylists.isEnabled)
+        outState.putString("lastDetectedMood", detectedMood.mood)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+
+        moodInput.setText(
+            savedInstanceState.getString(
+                "tempMood",
+                ""
+            )
+        ) // Restore mood input from rotation
+        emotionsListTextView.text =
+            savedInstanceState.getString("emotionResults", "") // Restore analysis results
+        btnSeePlaylists.isEnabled =
+            savedInstanceState.getBoolean("playlistButtonEnabled", false) // Restore button state
+
+        val restoredMood = savedInstanceState.getString("lastDetectedMood", "") ?: ""
+        if (restoredMood.isNotEmpty()) {
+            detectedMood =
+                MoodResult(restoredMood, 10.0F) // Prevent crashes due to uninitialized MoodResult
+            showPlaylist(restoredMood) // Ensure playlist button works after rotation
+        }
+    }
+
+
 }

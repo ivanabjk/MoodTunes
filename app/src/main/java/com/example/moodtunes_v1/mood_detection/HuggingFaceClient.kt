@@ -1,4 +1,4 @@
-package com.example.moodtunes_v1
+package com.example.moodtunes_v1.mood_detection
 
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient

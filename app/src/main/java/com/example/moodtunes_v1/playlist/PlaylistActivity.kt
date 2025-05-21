@@ -1,4 +1,4 @@
-package com.example.moodtunes_v1
+package com.example.moodtunes_v1.playlist
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -10,7 +10,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.example.moodtunes_v1.YouTubeFetcher.extractPlaylistId
+import com.example.moodtunes_v1.R
+import com.example.moodtunes_v1.playlist.YouTubeFetcher.extractPlaylistId
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

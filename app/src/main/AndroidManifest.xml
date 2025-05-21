@@ -23,7 +23,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PlaylistActivity" />
+        <activity android:name=".playlist.PlaylistActivity" />
+        <activity android:name=".user_auth.LoginActivity"
+            android:launchMode="singleTop"/>
+        <activity android:name=".user_auth.ProfileActivity" />
+        <activity android:name=".user_auth.RegisterActivity" />
+
     </application>
 
 

@@ -1,0 +1,20 @@
+package com.example.moodtunes_v1.user_auth
+
+import android.content.Context
+import android.content.SharedPreferences
+
+class SharedPref(context: Context) {
+    private val prefs: SharedPreferences = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+
+    fun setEmail(email: String?) {
+        prefs.edit().putString("email", email).apply()
+    }
+
+    fun getEmail(): String? = prefs.getString("email", null)
+
+    fun setLogged(logged: Boolean) {
+        prefs.edit().putBoolean("logged", logged).apply()
+    }
+
+    fun isLogged(): Boolean = prefs.getBoolean("logged", false)
+}
