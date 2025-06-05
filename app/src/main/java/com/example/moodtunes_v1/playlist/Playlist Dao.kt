@@ -11,4 +11,5 @@ interface PlaylistDao {
 
     @Query("SELECT * FROM playlists WHERE mood = :mood")
     suspend fun getPlaylistsByMood(mood: String): List<Playlist>
+
 }

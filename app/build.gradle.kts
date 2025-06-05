@@ -39,6 +39,13 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    packaging {
+        resources {
+            excludes += setOf("META-INF/LICENSE.txt", "META-INF/DEPENDENCIES")
+        }
+    }
+
 }
 
 dependencies {
@@ -67,6 +74,12 @@ dependencies {
     //Glide for loading images
     implementation ("com.github.bumptech.glide:glide:4.15.1")
 
+    // Tensorflow-lite
+    implementation ("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation ("org.tensorflow:tensorflow-lite-support:0.4.3")
+
+
+
     //Firebase authentication
 
     implementation ("com.google.firebase:firebase-auth:21.1.0")
@@ -74,18 +87,20 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
     //implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-analytics")
+    implementation ("com.google.firebase:firebase-firestore-ktx:24.9.0")
 
     // Circle Image View
     implementation ("de.hdodenhof:circleimageview:3.1.0")
 
-
+    // Chip for genres
+    implementation ("com.google.android.material:material:1.9.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.litert.support.api)
+//    implementation(libs.litert.support.api)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

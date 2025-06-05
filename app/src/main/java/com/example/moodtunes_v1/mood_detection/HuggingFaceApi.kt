@@ -16,6 +16,7 @@ data class HfResponseItem(
 // Hugging Face API interface
 interface HuggingFaceApi {
     @Headers("Content-Type: application/json")
-    @POST("models/borisn70/bert-43-multilabel-emotion-detection")
+    @POST("models/bhadresh-savani/bert-base-uncased-emotion")
+//    @POST("models/borisn70/bert-43-multilabel-emotion-detection")
     suspend fun analyzeEmotion(@Body request: HfRequest): List<List<HfResponseItem>>
 }

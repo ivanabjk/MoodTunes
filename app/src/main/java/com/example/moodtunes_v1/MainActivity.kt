@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.moodtunes_v1.mood_detection.HfRequest
+import com.example.moodtunes_v1.mood_detection.HfResponseItem
 import com.example.moodtunes_v1.mood_detection.HuggingFaceClient
 import com.example.moodtunes_v1.mood_detection.MoodClassifier
 import com.example.moodtunes_v1.mood_detection.MoodResult
@@ -24,6 +25,7 @@ import com.example.moodtunes_v1.user_auth.AuthService
 import com.example.moodtunes_v1.user_auth.LoginActivity
 import com.example.moodtunes_v1.user_auth.ProfileActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.yourpackagename.EmotionClassifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -46,6 +48,9 @@ class MainActivity : AppCompatActivity() {
     private var canRecord = false
     private val scope = MainScope()
 
+    //Emotion Detection TFLite
+    private lateinit var emotionClassifier: EmotionClassifier
+
     private lateinit var authService: AuthService
     //private lateinit var sharedPref: SharedPref
 
@@ -53,6 +58,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        //Emotion Detection Tflite
+        emotionClassifier = EmotionClassifier(this)
 
         //Firebase authentication
         authService = AuthService(this)
@@ -182,51 +190,92 @@ class MainActivity : AppCompatActivity() {
     private fun analyzeEmotion(text: String) {
         scope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    HuggingFaceClient.api.analyzeEmotion(HfRequest(text))
-                }
-                Log.d("HF_RESPONSE", response.toString())
-                val emotionList = response.firstOrNull() ?: emptyList()
+                // Run inference using TensorFlow Lite model
+                val predictions = emotionClassifier.classify(text) // Get emotion scores
 
-                val topFive = emotionList.sortedByDescending { it.score }.take(5)
-                val emotionsText = topFive.joinToString("\n") {
+                val emotionLabels = emotionClassifier.loadLabels("labels.txt") // Load labels dynamically
+                val emotions = emotionLabels.mapIndexed { index, label ->
+                    HfResponseItem(label, predictions[index]) // Create a list of detected emotions
+                }.sortedByDescending { it.score }
+
+                // Display all detected emotions
+
+                val emotionsText = emotions.joinToString("\n") {
                     "${it.label}: ${String.format("%.2f", it.score * 100)}%"
                 }
-                emotionsListTextView.text = if (emotionsText.isNotEmpty()) {
-                    "Top 5 Emotions:\n$emotionsText"
-                } else {
-                    ""
-                }
 
-                // Mood Detection
-                detectedMood = MoodClassifier.classifyMood(emotionList)
-                emotionsListTextView.text =
-                    "${emotionsListTextView.text}\n\nDetected Mood: ${detectedMood.mood} (${
-                        String.format(
-                            "%.2f",
-                            detectedMood.confidence * 100
-                        )
-                    }%)"
+                emotionsListTextView.text = "Detected Emotions:\n$emotionsText"
+
+                // Mood Detection using detected emotions
+                detectedMood = MoodClassifier.classifyMood(emotions)
+
+                emotionsListTextView.append("\n\nDetected Mood: ${detectedMood.mood} (${String.format("%.2f", detectedMood.confidence * 100)}%)")
 
                 // Store detected mood & emotion list
                 sharedPrefs.edit()
                     .putString("lastDetectedMood", detectedMood.mood)
-                    .putString("emotionResults", emotionsListTextView.text as String)
+                    .putString("emotionResults", emotionsListTextView.text.toString())
                     .apply()
-
 
                 // Enable the button after mood detection
                 btnSeePlaylists.isEnabled = true
                 showPlaylist(detectedMood.mood)
 
-
             } catch (e: Exception) {
                 moodInput.hint = "Error: ${e.message}"
-                Log.e("HF_ERROR", e.toString(), e)
+                Log.e("TFLITE_ERROR", e.toString(), e)
             }
-
         }
     }
+//    private fun analyzeEmotion(text: String) {
+//        scope.launch {
+//            try {
+//                val response = withContext(Dispatchers.IO) {
+//                    HuggingFaceClient.api.analyzeEmotion(HfRequest(text))
+//                }
+//
+//                Log.d("HF_RESPONSE", response.toString())
+//                val emotionList = response.firstOrNull() ?: emptyList()
+//
+//                val topFive = emotionList.sortedByDescending { it.score }.take(6)
+//                val emotionsText = topFive.joinToString("\n") {
+//                    "${it.label}: ${String.format("%.2f", it.score * 100)}%"
+//                }
+//                emotionsListTextView.text = if (emotionsText.isNotEmpty()) {
+//                    "Top 5 Emotions:\n$emotionsText"
+//                } else {
+//                    ""
+//                }
+//
+//                // Mood Detection
+//                detectedMood = MoodClassifier.classifyMood(emotionList)
+//                emotionsListTextView.text =
+//                    "${emotionsListTextView.text}\n\nDetected Mood: ${detectedMood.mood} (${
+//                        String.format(
+//                            "%.2f",
+//                            detectedMood.confidence * 100
+//                        )
+//                    }%)"
+//
+//                // Store detected mood & emotion list
+//                sharedPrefs.edit()
+//                    .putString("lastDetectedMood", detectedMood.mood)
+//                    .putString("emotionResults", emotionsListTextView.text as String)
+//                    .apply()
+//
+//
+//                // Enable the button after mood detection
+//                btnSeePlaylists.isEnabled = true
+//                showPlaylist(detectedMood.mood)
+//
+//
+//            } catch (e: Exception) {
+//                moodInput.hint = "Error: ${e.message}"
+//                Log.e("HF_ERROR", e.toString(), e)
+//            }
+//
+//        }
+//    }
 
     private fun clearMoodDetection() {
         emotionsListTextView.text = getString(R.string.emotion_detection)
@@ -291,6 +340,5 @@ class MainActivity : AppCompatActivity() {
             showPlaylist(restoredMood) // Ensure playlist button works after rotation
         }
     }
-
 
 }

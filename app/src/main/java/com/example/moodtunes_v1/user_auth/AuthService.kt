@@ -64,4 +64,9 @@ class AuthService(private val context: Context) {
     fun getEmail(): String? {
         return sharedPref.getEmail()
     }
+
+    fun getUserId(): String? {
+        return auth.currentUser?.uid ?: return null
+    }
+
 }

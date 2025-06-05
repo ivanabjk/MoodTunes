@@ -77,7 +77,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent?.let {
+        intent.let {
             val emailFromRegister = it.getStringExtra("email")
             if (!emailFromRegister.isNullOrEmpty()) {
                 emailEditText.setText(emailFromRegister)

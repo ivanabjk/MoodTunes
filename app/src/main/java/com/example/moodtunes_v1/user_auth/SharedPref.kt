@@ -17,4 +17,9 @@ class SharedPref(context: Context) {
     }
 
     fun isLogged(): Boolean = prefs.getBoolean("logged", false)
+
+    fun setMoodGenre(mood: String, genres: List<String>) {
+        prefs.edit().putStringSet(mood, genres.toSet()).apply()
+    }
+
 }
