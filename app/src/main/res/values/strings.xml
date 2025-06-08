@@ -1,6 +1,8 @@
 <resources>
-    <string name="app_name">MoodTunes_v1</string>
+    <string name="app_name">MoodTunes</string>
     <string name="how_are_you_feeling_today">How are you feeling today?</string>
-    <string name="moodInputHint">Type or speak how you feel...</string>
+    <string name="moodInputHint">Type or speak how you feel…</string>
     <string name="emotion_detection">Emotion Detection</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

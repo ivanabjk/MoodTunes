@@ -3,7 +3,6 @@ package com.example.moodtunes_v1.user_auth
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import android.widget.Toast
 import com.example.moodtunes_v1.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -40,7 +39,10 @@ class AuthService(private val context: Context) {
                     sharedPref.setEmail(email)
                     sharedPref.setLogged(true)
 
-                    Log.d("AUTH", "User logged in: ${sharedPref.getEmail()} | Logged Status: ${sharedPref.isLogged()}")
+                    Log.d(
+                        "AUTH",
+                        "User logged in: ${sharedPref.getEmail()} | Logged Status: ${sharedPref.isLogged()}"
+                    )
 
                     onResult("Success")
                     context.startActivity(Intent(context, MainActivity::class.java))
@@ -67,6 +69,10 @@ class AuthService(private val context: Context) {
 
     fun getUserId(): String? {
         return auth.currentUser?.uid ?: return null
+    }
+
+    fun isLoggedIn(): Boolean {
+        return sharedPref.isLogged() // Uses shared preferences to verify login state
     }
 
 }

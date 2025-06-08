@@ -16,6 +16,7 @@ onnxruntimeAndroid = "1.15.1"
 sentencepiece = "0.1.94"
 tensorflowLiteTaskText = "0.4.0"
 transformersAndroid = "0.1.0"
+mediationTestSuite = "3.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +35,7 @@ onnxruntime-android = { module = "com.microsoft.onnxruntime:onnxruntime-android"
 sentencepiece = { module = "com.github.google:sentencepiece", version.ref = "sentencepiece" }
 tensorflow-lite-task-text = { module = "org.tensorflow:tensorflow-lite-task-text", version.ref = "tensorflowLiteTaskText" }
 transformers-android = { module = "com.github.huggingface:transformers-android", version.ref = "transformersAndroid" }
+mediation-test-suite = { group = "com.google.android.ads", name = "mediation-test-suite", version.ref = "mediationTestSuite" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

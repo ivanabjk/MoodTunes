@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE"
         tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
     <application
         android:allowBackup="true"
@@ -30,8 +31,12 @@
         <activity android:name=".playlist.PlaylistActivity" />
         <activity android:name=".user_auth.LoginActivity"
             android:launchMode="singleTop"/>
-        <activity android:name=".user_auth.ProfileActivity" />
+<!--        <activity android:name=".user_auth.ProfileActivity" />-->
         <activity android:name=".user_auth.RegisterActivity" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
     </application>
 

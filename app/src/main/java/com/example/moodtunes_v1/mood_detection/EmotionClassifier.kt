@@ -1,4 +1,4 @@
-package com.yourpackagename
+package com.example.moodtunes_v1.mood_detection
 
 import android.content.Context
 import android.util.Log
@@ -6,9 +6,9 @@ import org.tensorflow.lite.Interpreter
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.io.FileInputStream
-import org.json.JSONObject
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.exp
 
 class EmotionClassifier(private val context: Context) {
 
@@ -31,9 +31,6 @@ class EmotionClassifier(private val context: Context) {
     private fun loadVocab(fileName: String): Map<String, Int> {
         val inputStream = context.assets.open(fileName)
         val lines = inputStream.bufferedReader().readLines()
-        val map = mutableMapOf<String, Int>()
-//        lines.forEachIndexed { index, word -> map[word] = index }
-//        return map
         return lines.withIndex().associate { it.value to it.index }
     }
 
@@ -95,7 +92,7 @@ class EmotionClassifier(private val context: Context) {
 
     private fun softmax(values: FloatArray): FloatArray {
         val maxVal = values.maxOrNull() ?: 0f
-        val expValues = values.map { Math.exp((it - maxVal).toDouble()).toFloat() }
+        val expValues = values.map { exp((it - maxVal).toDouble()).toFloat() }
         val sumExp = expValues.sum()
         return expValues.map { it / sumExp }.toFloatArray()
     }

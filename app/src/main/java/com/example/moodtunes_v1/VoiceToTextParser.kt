@@ -7,7 +7,6 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class VoiceToTextParser(
@@ -15,9 +14,8 @@ class VoiceToTextParser(
 ) : RecognitionListener {
 
     private val _state = MutableStateFlow(VoiceToTextParserState())
-    val state = _state.asStateFlow()
 
-    val recognizer = SpeechRecognizer.createSpeechRecognizer(app)
+    private val recognizer = SpeechRecognizer.createSpeechRecognizer(app)
 
     fun startListening(languageCode: String = "en-US") {
         _state.update { VoiceToTextParserState() }

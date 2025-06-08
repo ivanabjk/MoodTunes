@@ -5,7 +5,10 @@ import android.os.Bundle
 import android.util.Patterns
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.moodtunes_v1.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
 
@@ -49,22 +52,12 @@ class LoginActivity : AppCompatActivity() {
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString()
 
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
-            } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                Toast.makeText(this, "Email not valid!", Toast.LENGTH_SHORT).show()
-            } else if (password.length < 6) {
-                Toast.makeText(this, "Password should be at least 6 characters", Toast.LENGTH_SHORT).show()
-            } else {
-                authService.login(email, password){result ->
-                    runOnUiThread{
-                        if (result == "Success") {
-                            Toast.makeText(this, "Logged in successfully", Toast.LENGTH_SHORT).show()
-                            // Optionally finish LoginActivity so user can't go back here
-                            finish()
-                        } else {
-                            Toast.makeText(this, result ?: "Login failed", Toast.LENGTH_SHORT).show()
-                        }
+            if (!validateInputs(email, password)) return@setOnClickListener
+
+            lifecycleScope.launch(Dispatchers.IO) { // Avoid blocking main thread
+                authService.login(email, password) { result ->
+                    lifecycleScope.launch(Dispatchers.Main) { // Ensure safe UI updates
+                        handleLoginResult(result)
                     }
                 }
             }
@@ -83,6 +76,36 @@ class LoginActivity : AppCompatActivity() {
                 emailEditText.setText(emailFromRegister)
             }
         }
+    }
+    private fun handleLoginResult(result: String?) {
+        if (result == "Success") {
+            showToast("Logged in successfully")
+            finish() // Prevent user from navigating back to login
+        } else {
+            showToast(result ?: "Login failed")
+        }
+    }
+
+    private fun validateInputs(email: String, password: String): Boolean {
+        return when {
+            email.isEmpty() || password.isEmpty() -> {
+                showToast("Please fill all fields")
+                false
+            }
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
+                showToast("Email not valid!")
+                false
+            }
+            password.length < 6 -> {
+                showToast("Password should be at least 6 characters")
+                false
+            }
+            else -> true
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
 }

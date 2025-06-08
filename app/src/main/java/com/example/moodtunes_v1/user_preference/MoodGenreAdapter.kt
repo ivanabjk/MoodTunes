@@ -1,23 +1,20 @@
+package com.example.moodtunes_v1.user_preference
+
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.text.InputType
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.moodtunes_v1.R
-import com.example.moodtunes_v1.user_preference.MoodGenres
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.android.material.internal.ViewUtils.showKeyboard
 
 class MoodGenreAdapter(
     private var moodGenreList: List<MoodGenres>,
@@ -27,7 +24,6 @@ class MoodGenreAdapter(
 
     inner class MoodGenreViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val moodTextView: TextView = view.findViewById(R.id.tvMood)
-        //val genresContainer: LinearLayout = view.findViewById(R.id.genresContainer)
         val genresChipGroup: ChipGroup = view.findViewById(R.id.genresChipGroup)
 
     }
@@ -38,44 +34,7 @@ class MoodGenreAdapter(
         return MoodGenreViewHolder(view)
     }
 
-    //    override fun onBindViewHolder(holder: MoodGenreViewHolder, position: Int) {
-//        val moodGenre = moodGenreList[position]
-//        holder.moodTextView.text = moodGenre.mood
-//        holder.genresContainer.removeAllViews()
-//
-//        moodGenre.genres.forEachIndexed { index, genre ->
-//            val editText = EditText(holder.itemView.context).apply {
-//                layoutParams = LinearLayout.LayoutParams(
-//                    ViewGroup.LayoutParams.WRAP_CONTENT,
-//                    ViewGroup.LayoutParams.WRAP_CONTENT
-//                )
-//                setText(genre)
-//                hint = "Edit genre"
-//
-//                addTextChangedListener(object : TextWatcher {
-//                    override fun afterTextChanged(s: Editable?) {
-//                        try {
-//                            val updatedGenres = moodGenre.genres.toMutableList()
-//
-//                            // Make sure the index exists before modifying
-//                            if (index in updatedGenres.indices) {
-//                                updatedGenres[index] = s.toString().trim()
-//                                onGenreChanged(moodGenre.mood, updatedGenres)
-//                            } else {
-//                                Log.e("RecyclerView", "Invalid index: $index, list size: ${updatedGenres.size}")
-//                            }
-//                        } catch (e: Exception) {
-//                            Log.e("RecyclerView", "Error updating genre", e)
-//                        }
-//                    }
-//
-//                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-//                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-//                })
-//            }
-//            holder.genresContainer.addView(editText)
-//        }
-//    }
+    @SuppressLint("NotifyDataSetChanged", "ResourceAsColor")
     override fun onBindViewHolder(holder: MoodGenreViewHolder, position: Int) {
         val moodGenre = moodGenreList[position]
         holder.moodTextView.text = moodGenre.mood
@@ -85,7 +44,7 @@ class MoodGenreAdapter(
             val chip = Chip(holder.itemView.context).apply {
                 text = genre
                 isCloseIconVisible = true
-                chipBackgroundColor = ColorStateList.valueOf(Color.LTGRAY)
+                chipBackgroundColor = ColorStateList.valueOf(R.color.headerBackground)
                 setTextColor(Color.BLACK)
 
                 isFocusableInTouchMode = true
@@ -110,7 +69,7 @@ class MoodGenreAdapter(
                         val updatedGenres = moodGenre.genres.toMutableList()
                         updatedGenres[index] = this.text.toString().trim()
 
-                        onGenreChanged(moodGenre.mood, updatedGenres) // Save to Firestore
+                        onGenreChanged(moodGenre.mood, updatedGenres) // Save to FireStore
                         notifyDataSetChanged() // Refresh RecyclerView
                         true
                     } else false
@@ -123,22 +82,38 @@ class MoodGenreAdapter(
             }
             holder.genresChipGroup.addView(chip)
         }
+        // Create and add the "+" chip at the end
+        val addChip = Chip(holder.itemView.context).apply {
+            text = "+"
+            isCloseIconVisible = false // No remove option
+            chipBackgroundColor = ColorStateList.valueOf(R.color.headerBorder)
+            setTextColor(Color.WHITE)
+
+            setOnClickListener {
+                val newGenreName = "genre${moodGenre.genres.size + 1}" // Generate genre name dynamically
+                val updatedGenres = moodGenre.genres.toMutableList().apply { add(newGenreName) }
+
+                onGenreChanged(moodGenre.mood, updatedGenres) // Persist the new genre in FireStore
+                notifyDataSetChanged() // Refresh RecyclerView to reflect changes
+            }
+        }
+
+        holder.genresChipGroup.addView(addChip) // Add the "+" chip at the end
+
     }
 
-    fun removeGenreFromUI(mood: String, genre: String) {
-        onGenreRemoved(mood, genre) // Notify ProfileActivity to handle Firestore update
+    private fun removeGenreFromUI(mood: String, genre: String) {
+        onGenreRemoved(mood, genre) // Notify ProfileActivity to handle FireStore update
     }
 
     override fun getItemCount(): Int = moodGenreList.size
+    @SuppressLint("NotifyDataSetChanged")
     fun updateData(newData: List<MoodGenres>) {
         moodGenreList = newData
         notifyDataSetChanged() // Ensure RecyclerView updates properly
     }
-    fun EditText.getOffsetForPosition(x: Float, y: Float): Int {
-        val layout = layout ?: return text.length
-        return layout.getOffsetForHorizontal(0, x)
-    }
-    fun showKeyboard(view: View) {
+
+    private fun showKeyboard(view: View) {
         val imm = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
     }

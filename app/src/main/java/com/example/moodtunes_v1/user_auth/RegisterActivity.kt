@@ -6,11 +6,8 @@ import android.util.Patterns
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.example.moodtunes_v1.R
-import com.google.firebase.auth.FirebaseAuth
 
 class RegisterActivity : AppCompatActivity() {
-
-    private lateinit var auth: FirebaseAuth
 
     private lateinit var nameEditText: EditText
     private lateinit var emailEditText: EditText

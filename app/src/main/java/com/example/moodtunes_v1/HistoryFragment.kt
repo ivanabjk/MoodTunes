@@ -1,15 +1,18 @@
 package com.example.moodtunes_v1
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 
-class HistoryFragment : Fragment(R.layout.fragment_history) {
+class HistoryFragment : Fragment() {
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        view.findViewById<TextView>(R.id.textView2).text = "Hello from History"
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_history, container, false)
     }
 }
