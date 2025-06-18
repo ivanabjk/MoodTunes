@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardUseCompatPadding="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/ivPlaylistImage"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:src="@drawable/sample_image"/>
+
+        <TextView
+            android:id="@+id/tvPlaylistTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Playlist Title"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#222222"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="2dp"
+            />
+
+        <TextView
+            android:id="@+id/tvPlaylistGenre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Playlist genre."
+            android:textSize="14sp"
+            android:textStyle="normal"
+            android:textColor="#555555"
+            android:layout_marginTop="4dp"/>
+
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

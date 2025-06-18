@@ -8,10 +8,9 @@ import androidx.fragment.app.Fragment
 import com.example.moodtunes_v1.home.HomeFragment
 import com.example.moodtunes_v1.playlist.MoodTunesDatabase
 import com.example.moodtunes_v1.playlist.PlaylistLoader
-import com.example.moodtunes_v1.playlist.ProfileFragment
+import com.example.moodtunes_v1.user_auth.ProfileFragment
 import com.example.moodtunes_v1.user_auth.AuthService
 import com.example.moodtunes_v1.user_auth.LoginActivity
-//import com.example.moodtunes_v1.user_auth.ProfileActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.MainScope
 
@@ -48,23 +47,17 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_history, R.id.nav_favorites, R.id.nav_profile -> {
                     if (authService.isLoggedIn()) {
                         replaceFragment(
-                            if (menuItem.itemId == R.id.nav_history) HistoryFragment()
-                            else if(menuItem.itemId == R.id.nav_favorites) FavoritesFragment()
-                            else ProfileFragment()
+                            when (menuItem.itemId) {
+                                R.id.nav_history -> HistoryFragment()
+                                R.id.nav_favorites -> FavoritesFragment()
+                                else -> ProfileFragment()
+                            }
                         )
                     } else {
                         startActivity(Intent(this, LoginActivity::class.java))
                     }
                     true
                 }
-//                R.id.nav_profile -> {
-//                    if (authService.isLoggedIn()) {
-//                        startActivity(Intent(this, ProfileActivity::class.java))
-//                    } else {
-//                        startActivity(Intent(this, LoginActivity::class.java))
-//                    }
-//                    true
-//                }
                 else -> false
             }
         }

@@ -6,11 +6,12 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import com.example.moodtunes_v1.BuildConfig
 
 object YouTubeFetcher {
 
-    private const val API_KEY = "AIzaSyBC0Qd9z8VOH7_7AooK7YowBsmy5dH7d0A" // Replace with your actual API key
-
+//    private const val API_KEY = BuildConfig.YT_API_KEY
+    private const val API_KEY = "AIzaSyBC0Qd9z8VOH7_7AooK7YowBsmy5dH7d0A"
     suspend fun getFirstVideoUrl(playlistId: String): String {
         val apiUrl = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=$playlistId&maxResults=1&key=$API_KEY"
 
@@ -18,6 +19,8 @@ object YouTubeFetcher {
             try {
                 val connection = URL(apiUrl).openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
+                connection.connectTimeout = 5000   // wait max 5s to establish connection
+                connection.readTimeout = 5000       // wait max 5s for data read
                 connection.connect()
 
                 val response = connection.inputStream.bufferedReader().use { it.readText() }
@@ -45,6 +48,8 @@ object YouTubeFetcher {
             try {
                 val connection = URL(apiUrl).openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
                 connection.connect()
 
                 val response = connection.inputStream.bufferedReader().use { it.readText() }

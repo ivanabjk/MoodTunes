@@ -2,93 +2,67 @@ package com.example.moodtunes_v1.playlist
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.moodtunes_v1.R
 import com.example.moodtunes_v1.playlist.YouTubeFetcher.extractPlaylistId
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-@OptIn(DelicateCoroutinesApi::class)
 class PlaylistActivity : AppCompatActivity() {
 
-    @SuppressLint("SetTextI18n")
+    private val viewModel: PlaylistViewModel by viewModels()
+    private lateinit var playlistAdapter: PlaylistAdapter
+
+    @SuppressLint("SetTextI18n", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_playlist)
 
         val mood = intent.getStringExtra("MOOD") ?: "Neutral"
         val moodTitle = findViewById<TextView>(R.id.tvMoodTitle)
-        val playlistContainer = findViewById<LinearLayout>(R.id.playlistContainer)
+        moodTitle.text = "For your $mood mood!"
 
-        moodTitle.text = "Here are some playlists for $mood mood"
+        val recyclerView = findViewById<RecyclerView>(R.id.rvPlaylists)
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        fetchPlaylists(mood, playlistContainer)
+        playlistAdapter = PlaylistAdapter(emptyList(), emptyMap()) { playlist ->
+            val playlistId = extractPlaylistId(playlist.url)
+            val firstVideoUrl = viewModel.playlistInfo.value[playlistId]?.first ?: return@PlaylistAdapter
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(firstVideoUrl))
+            intent.setPackage("com.google.android.youtube")
+            startActivity(intent)
+        }
+
+        recyclerView.adapter = playlistAdapter
+
+        fetchPlaylists(mood)
+
     }
     @SuppressLint("SetTextI18n")
-    private fun fetchPlaylists(mood: String, playlistContainer: LinearLayout) {
+    private fun fetchPlaylists(mood: String) {
         val db = MoodTunesDatabase.getDatabase(this)
         val playlistDao = db.playlistDao()
 
 
-        GlobalScope.launch(Dispatchers.Main) {
+        lifecycleScope.launch(Dispatchers.Main) {
             val playlists = playlistDao.getPlaylistsByMood(mood)
+            if (playlists.isEmpty()) {
+                findViewById<TextView>(R.id.tvMoodTitle).text = "No playlists found for this mood 😢"
+                return@launch
+            }
+            val playlistIds = playlists.map { extractPlaylistId(it.url) }
 
-            playlists.forEach { playlist ->
-                val playlistId = extractPlaylistId(playlist.url)
-                val firstVideoUrl = YouTubeFetcher.getFirstVideoUrl(playlistId)
-                val firstVideoId = firstVideoUrl.substringAfter("watch?v=").substringBefore("&list")
-                val thumbnailUrl = YouTubeFetcher.getThumbnailUrl(firstVideoId)
+            viewModel.fetchPlaylistMetadata(playlistIds)
 
-                // Fetching playlist title
-                val playlistTitle = YouTubeFetcher.getPlaylistTitle(playlistId)
-
-                val previewLayout = LinearLayout(this@PlaylistActivity).apply {
-                    orientation = LinearLayout.VERTICAL
-                    setPadding(20, 20, 20, 20)
-
-                    // Genre TextView
-                    val genreTextView = TextView(this@PlaylistActivity).apply {
-                        text = playlist.genre
-                        textSize = 22f
-                        setTypeface(null, Typeface.BOLD)
-                        setPadding(0, 0, 0, 10)
-                    }
-
-                    // Playlist Title TextView
-                    val playlistTitleTextView = TextView(this@PlaylistActivity).apply {
-                        text = playlistTitle
-                        textSize = 16f // Smaller text size
-                        setPadding(0, 0, 0, 10)
-                    }
-
-                    val thumbnailImageView = ImageView(this@PlaylistActivity).apply {
-                        layoutParams = LinearLayout.LayoutParams(500, 400)
-                        Glide.with(this@PlaylistActivity)
-                            .load(thumbnailUrl)
-                            .into(this) // Loads the actual thumbnail
-
-                        setOnClickListener {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(firstVideoUrl))
-                            intent.setPackage("com.google.android.youtube")
-                            startActivity(intent)
-                        }
-                    }
-
-                    addView(genreTextView)
-                    addView(playlistTitleTextView)
-                    addView(thumbnailImageView)
-                }
-
-                playlistContainer.addView(previewLayout)
+            viewModel.playlistInfo.collect { metadataMap ->
+                playlistAdapter.updateData(playlists, metadataMap)
             }
         }
     }

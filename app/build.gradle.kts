@@ -13,6 +13,10 @@ android {
         enable = true
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.example.moodtunes_v1"
         minSdk = 24
@@ -21,6 +25,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val ytApiKey: String = project.findProperty("YT_API_KEY") as? String ?: ""
+        buildConfigField("String", "YT_API_KEY", "\"$ytApiKey\"")
     }
 
     buildTypes {
@@ -45,6 +52,8 @@ android {
             excludes += setOf("META-INF/LICENSE.txt", "META-INF/DEPENDENCIES")
         }
     }
+
+
 
 }
 
