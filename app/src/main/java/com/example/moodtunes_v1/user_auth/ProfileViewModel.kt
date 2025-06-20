@@ -37,5 +37,4 @@ class ProfileViewModel(private val authService: AuthService, private val db: Fir
             .addOnFailureListener { Log.e("FirestoreError", "Error fetching data", it) }
     }
 
-
 }

@@ -30,7 +30,7 @@
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
         app:layout_constraintHeight_default="percent"
-        app:layout_constraintHeight_percent="0.90"
+        app:layout_constraintHeight_percent="0.87"
         app:layout_constraintTop_toBottomOf="@id/tvPageTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.example.moodtunes_v1.favorites.FavoritesFragment
 import com.example.moodtunes_v1.home.HomeFragment
 import com.example.moodtunes_v1.playlist.MoodTunesDatabase
 import com.example.moodtunes_v1.playlist.PlaylistLoader

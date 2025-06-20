@@ -15,13 +15,15 @@ import com.example.moodtunes_v1.R
 class PlaylistAdapter(
     private var playlistList: List<Playlist>,
     private var metadataMap: Map<String, Pair<String, String>>, // playlistId → (url, title)
-    private val onItemClick: (Playlist) -> Unit
+    private val onItemClick: (Playlist) -> Unit,
+    private val favoriteToggleListener: OnFavoriteToggleListener
 ) : RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder>() {
 
     inner class PlaylistViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val genreTextView: TextView = view.findViewById(R.id.tvPlaylistGenre)
         val playlistTitleTextView: TextView = view.findViewById(R.id.tvPlaylistTitle)
         val thumbnailImageView: ImageView = view.findViewById(R.id.ivPlaylistImage)
+        val favoriteIcon: ImageView = itemView.findViewById(R.id.ivFavoriteIcon)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaylistViewHolder {
@@ -53,6 +55,17 @@ class PlaylistAdapter(
             intent.setPackage("com.google.android.youtube")
             holder.itemView.context.startActivity(intent)
         }
+
+        holder.favoriteIcon.setImageResource(
+            if (playlist.isFavorite) R.drawable.favorite_filled
+            else R.drawable.favorite_outline
+        )
+
+        holder.favoriteIcon.setOnClickListener {
+            val playlist = playlistList[holder.adapterPosition]
+            favoriteToggleListener.onFavoriteToggled(playlist)
+            notifyItemChanged(holder.adapterPosition)
+        }
     }
 
     override fun getItemCount(): Int = playlistList.size
@@ -63,4 +76,8 @@ class PlaylistAdapter(
         metadataMap = newMetadata
         notifyDataSetChanged()
     }
+
+}
+interface OnFavoriteToggleListener {
+    fun onFavoriteToggled(playlist: Playlist)
 }

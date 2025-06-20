@@ -70,6 +70,7 @@ dependencies {
     // Kotlin Coroutines for asynchronous code
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1")
 
     // (Optional) OkHttp Logging interceptor for debugging network calls
     implementation ("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")

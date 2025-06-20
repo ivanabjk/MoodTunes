@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardUseCompatPadding="true"
     android:foreground="?attr/selectableItemBackground"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,31 +19,39 @@
             android:id="@+id/ivPlaylistImage"
             android:layout_width="match_parent"
             android:layout_height="180dp"
-            android:scaleType="centerCrop"
             android:adjustViewBounds="true"
-            android:src="@drawable/sample_image"/>
+            android:scaleType="centerCrop"
+            android:src="@drawable/sample_image" />
 
         <TextView
             android:id="@+id/tvPlaylistTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Playlist Title"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#222222"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="2dp"
-            />
+            android:text="Playlist Title"
+            android:textColor="#222222"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvPlaylistGenre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:text="Playlist genre."
-            android:textSize="14sp"
-            android:textStyle="normal"
             android:textColor="#555555"
-            android:layout_marginTop="4dp"/>
+            android:textSize="14sp"
+            android:textStyle="normal" />
+
+        <ImageView
+            android:id="@+id/ivFavoriteIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="end|bottom"
+            android:contentDescription="Favorite icon"
+            android:src="@drawable/favorite_outline"
+            app:tint="#FF0000" />
 
 
     </LinearLayout>
