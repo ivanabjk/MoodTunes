@@ -2,6 +2,7 @@ package com.example.moodtunes_v1.user_auth
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -12,6 +13,7 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.moodtunes_v1.R
 import com.example.moodtunes_v1.databinding.FragmentProfileBinding
 import com.example.moodtunes_v1.user_preference.MoodGenreAdapter
@@ -35,7 +37,16 @@ class ProfileFragment : Fragment() {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val imageUri = result.data?.data
-            // Handle selected image URI
+            imageUri?.let {
+                SharedPref(requireContext()).setProfileImageUri(it.toString())
+
+                Glide.with(requireContext())
+                    .load(it)
+                    .placeholder(R.drawable.default_profile_pic)
+                    .circleCrop()
+                    .into(binding.profileImage)
+            }
+
         }
     }
 
@@ -73,6 +84,14 @@ class ProfileFragment : Fragment() {
         binding.cameraIcon.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             pickImageLauncher.launch(intent)
+        }
+        val savedUri = SharedPref(requireContext()).getProfileImageUri()
+        savedUri?.let {
+            Glide.with(requireContext())
+                .load(Uri.parse(it))
+                .placeholder(R.drawable.default_profile_pic)
+                .circleCrop()
+                .into(binding.profileImage)
         }
 
         // Testing FireStore connection

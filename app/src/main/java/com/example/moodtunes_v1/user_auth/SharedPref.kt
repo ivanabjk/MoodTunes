@@ -22,4 +22,9 @@ class SharedPref(context: Context) {
         prefs.edit().putStringSet(mood, genres.toSet()).apply()
     }
 
+    fun setProfileImageUri(uri: String) {
+        prefs.edit().putString("profile_image_uri", uri).apply()
+    }
+
+    fun getProfileImageUri(): String? = prefs.getString("profile_image_uri", null)
 }

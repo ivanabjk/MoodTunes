@@ -3,6 +3,7 @@ package com.example.moodtunes_v1.favorites
 import android.util.Log
 import com.example.moodtunes_v1.playlist.Playlist
 import com.example.moodtunes_v1.playlist.PlaylistDao
+import com.example.moodtunes_v1.playlist.YouTubeFetcher
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
@@ -15,30 +16,33 @@ class FavoritesRepository(
     private val auth = FirebaseAuth.getInstance()
 
     suspend fun toggleFavorite(playlist: Playlist) {
-        val updatedFavorite = !playlist.isFavorite
-        playlistDao.updateFavoriteStatus(playlist.id, updatedFavorite)
+        playlistDao.updateFavoriteStatus(playlist.url, playlist.isFavorite)
 
         val email = auth.currentUser?.email ?: return
+        val playlistId = YouTubeFetcher.extractPlaylistId(playlist.url)
+        Log.d("Favorites", "Saving to FireStore using ID: $playlistId")
+
         val docRef = firestore
             .collection("user_favorites")
             .document(email)
             .collection("favorites")
-            .document(playlist.id.toString())
+            .document(playlistId)
 
-        if (updatedFavorite) {
-            val playlistWithTimestamp = playlist.copy(isFavorite = true)
-            docRef.set(playlistWithTimestamp)
-                .addOnSuccessListener {
-                    docRef.update("addedAt", com.google.firebase.Timestamp.now())
-                    Log.e("Favorites", "Favorites updated with timestamp.")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("Favorites", "Failed to set playlist: ${e.message}")
-                }
-        }
-        else {
-            docRef.delete()
-            Log.e("Favorites", "Favorites deleted.")
+        if (playlist.isFavorite) {
+            try {
+                docRef.set(playlist).await()
+                docRef.update("addedAt", com.google.firebase.Timestamp.now()).await()
+                Log.d("Favorites", "Favorites updated with timestamp.")
+            } catch (e: Exception) {
+                Log.e("Favorites", "Failed to set playlist: ${e.message}")
+            }
+        } else {
+            try {
+                docRef.delete().await()
+                Log.d("Favorites", "Favorites deleted.")
+            } catch (e: Exception) {
+                Log.e("Favorites", "Failed to delete playlist: ${e.message}")
+            }
         }
     }
 
@@ -60,5 +64,9 @@ class FavoritesRepository(
             .get()
             .await()
         return snapshot.documents.mapNotNull { it.toObject(Playlist::class.java) }
+    }
+    suspend fun enrichWithFavorites(playlists: List<Playlist>): List<Playlist> {
+        val favoriteIds = playlistDao.getAllFavoritePlaylistIds() // returns List<String> or Set<String>
+        return playlists.map { it.copy(isFavorite = it.url in favoriteIds) }
     }
 }

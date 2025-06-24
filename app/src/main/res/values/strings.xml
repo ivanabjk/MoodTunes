@@ -5,4 +5,11 @@
     <string name="emotion_detection">Emotion Detection</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="history">History</string>
+    <string name="filter_playlists">Filter playlists</string>
+    <string name="filter_icon">Filter icon</string>
+    <string name="mood">Mood:</string>
+    <string name="genre">Genre:</string>
+    <string name="favorites">Favorites</string>
+    <string name="filter_history">Filter history</string>
 </resources>

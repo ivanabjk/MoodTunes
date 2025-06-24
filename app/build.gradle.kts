@@ -83,6 +83,9 @@ dependencies {
 
     //Glide for loading images
     implementation ("com.github.bumptech.glide:glide:4.15.1")
+    implementation ("pl.droidsonroids.gif:android-gif-drawable:1.2.25")
+    implementation ("com.airbnb.android:lottie:6.3.0")
+
 
     // Tensorflow-lite
     implementation ("org.tensorflow:tensorflow-lite:2.14.0")

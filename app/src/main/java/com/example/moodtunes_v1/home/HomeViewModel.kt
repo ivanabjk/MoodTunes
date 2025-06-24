@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val app: Application,
-    @SuppressLint("StaticFieldLeak") private val context: Context,
+    private val context: Context,
     private val state: SavedStateHandle
 ) : ViewModel() {
 
@@ -47,11 +47,11 @@ class HomeViewModel(
     }
 
     fun saveUserText(text: String) {
-        _userText.value = text
+        state["userText"] = text
     }
 
     fun saveMood(mood: String) {
-        _detectedMood.value = mood
+        state["detectedMood"] = mood
     }
 
 
@@ -71,7 +71,9 @@ class HomeViewModel(
                     HfResponseItem(label, predictions[index])
                 })
 
-                _detectedMood.postValue(moodResult.mood)
+//                _detectedMood.postValue(moodResult.mood)
+                saveMood(moodResult.mood)
+
 
             } catch (e: Exception) {
                 _emotionsLiveData.postValue("Error: ${e.message}")

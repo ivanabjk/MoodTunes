@@ -1,7 +1,7 @@
 package com.example.moodtunes_v1.home
 
 import android.Manifest
-import android.content.Intent
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,12 +10,11 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.moodtunes_v1.R
 import com.example.moodtunes_v1.databinding.FragmentHomeBinding
-import com.example.moodtunes_v1.playlist.PlaylistActivity
+import com.example.moodtunes_v1.playlist.PlaylistFragment
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
@@ -40,9 +39,10 @@ class HomeFragment : Fragment() {
         val factory = HomeViewModelFactory(
             requireActivity().application,
             requireContext(),
-            SavedStateHandle()
+            this,
+            arguments
         )
-        viewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory)[HomeViewModel::class.java]
     }
 
 
@@ -54,8 +54,14 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             setupListeners()  // Ensures UI setup happens asynchronously
             observeViewModel()
+
+            binding.btnSeePlaylists.setOnClickListener {
+                launchPlaylist(viewModel.detectedMood.value.orEmpty())
+            }
+
             requestPermissions()
         }
+
 
     }
 
@@ -72,6 +78,11 @@ class HomeFragment : Fragment() {
             viewModel.clearMood()
             binding.etMoodInput.setText("") // Forcefully clear EditText
             binding.etMoodInput.hint = editTextHint // Reset hint
+
+            // Hide the mood animation
+            binding.moodAnimation.cancelAnimation()
+            binding.moodAnimation.visibility = View.GONE
+
         }
 
         binding.etMoodInput.setOnFocusChangeListener { _, hasFocus ->
@@ -89,9 +100,9 @@ class HomeFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
         viewModel.emotionsLiveData.observe(viewLifecycleOwner) { emotions ->
-            binding.tvEmotionList.text = emotions
             binding.btnSeePlaylists.isEnabled = emotions.isNotEmpty()
         }
 
@@ -107,18 +118,11 @@ class HomeFragment : Fragment() {
         }
 
         viewModel.detectedMood.observe(viewLifecycleOwner) { mood ->
-            if (mood.isNotEmpty()) {
-                showPlaylist(mood)
-                binding.tvEmotionList.append("\n\nDetected Mood: $mood")
-
+            if (mood.isNotBlank()) {
+                displayMoodAnimation(mood)
             }
         }
 
-        viewModel.userText.observe(viewLifecycleOwner) { text ->
-            if (binding.etMoodInput.text.toString() != text) { // Prevents unnecessary re-setting
-                binding.etMoodInput.setText(text)
-            }
-        }
 
     }
 
@@ -138,16 +142,76 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun showPlaylist(detectedMood: String) {
-        binding.btnSeePlaylists.setOnClickListener {
-            val intent = Intent(requireContext(), PlaylistActivity::class.java)
-            intent.putExtra("MOOD", detectedMood)
-            startActivity(intent)
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+        val isBackStack = requireActivity()
+            .supportFragmentManager
+            .backStackEntryCount > 0
+
+        if (!isBackStack) {
+            // User navigated away via bottom nav → reset mood + input
+            viewModel.clearMood() // clears detected mood and user text
+        }
+
     }
+
+    private fun getMoodAnimationFile(mood: String): String? = when (mood.lowercase()) {
+        "happy" -> "happy_emoji.json"
+        "sad" -> "sad_emoji.json"
+        "angry" -> "angry_emoji.json"
+        else -> null
+    }
+
+    private fun displayMoodAnimation(mood: String) {
+        val file = getMoodAnimationFile(mood)
+        binding.moodAnimation.apply {
+            if (file != null) {
+                setAnimation(file)
+                visibility = View.VISIBLE
+                playAnimation()
+            } else {
+                cancelAnimation()
+                visibility = View.GONE
+            }
+        }
+    }
+
+    private fun launchPlaylist(mood: String) {
+        if (mood.isBlank()) return
+
+        val fragment = PlaylistFragment.newInstance(
+            userInput = viewModel.userText.value.orEmpty(),
+            mood = mood
+        )
+
+        requireActivity()
+            .supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val isBackStack = requireActivity()
+            .supportFragmentManager
+            .backStackEntryCount > 0
+
+        if (isBackStack) {
+            val userText = viewModel.userText.value.orEmpty()
+            binding.etMoodInput.setText(userText)
+
+            val mood = viewModel.detectedMood.value.orEmpty()
+            if (mood.isNotBlank()) {
+                displayMoodAnimation(mood)
+                binding.btnSeePlaylists.isEnabled = true
+            }
+        }
+    }
+
 }

@@ -2,11 +2,12 @@ package com.example.moodtunes_v1.playlist
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 @Dao
 interface PlaylistDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlaylist(playlist: Playlist)
 
     @Query("SELECT * FROM playlists WHERE mood = :mood")
@@ -25,6 +26,9 @@ interface PlaylistDao {
     suspend fun getFavoritePlaylistsByGenre(genre: String): List<Playlist>
 
     // Update favorite status for a playlist
-    @Query("UPDATE playlists SET isFavorite = :isFavorite WHERE id = :id")
-    suspend fun updateFavoriteStatus(id: Int, isFavorite: Boolean)
+    @Query("UPDATE playlists SET isFavorite = :isFavorite WHERE url = :url")
+    suspend fun updateFavoriteStatus(url: String, isFavorite: Boolean)
+
+    @Query("SELECT url FROM playlists WHERE isFavorite = 1")
+    suspend fun getAllFavoritePlaylistIds(): List<String>
 }

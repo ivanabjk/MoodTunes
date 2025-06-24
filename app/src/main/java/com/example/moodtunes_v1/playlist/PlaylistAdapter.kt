@@ -36,10 +36,10 @@ class PlaylistAdapter(
         val playlist = playlistList[position]
         holder.genreTextView.text = playlist.genre
 
-        val playlistId = YouTubeFetcher.extractPlaylistId(playlist.url)
-        val (firstVideoUrl, playlistTitle) = metadataMap[playlistId] ?: return
+//        val playlistId = YouTubeFetcher.extractPlaylistId(playlist.url)
+        val (firstVideoUrl, playlistTitle) = metadataMap[playlist.url] ?: return
 
-        val firstVideoId = firstVideoUrl.substringAfter("watch?v=").substringBefore("&list")
+        val firstVideoId = firstVideoUrl.substringAfter("watch?v=").substringBefore("&")
         val thumbnailUrl = YouTubeFetcher.getThumbnailUrl(firstVideoId)
 
 

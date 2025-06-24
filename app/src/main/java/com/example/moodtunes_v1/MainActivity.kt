@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.moodtunes_v1.favorites.FavoritesFragment
+import com.example.moodtunes_v1.history.HistoryFragment
 import com.example.moodtunes_v1.home.HomeFragment
 import com.example.moodtunes_v1.playlist.MoodTunesDatabase
 import com.example.moodtunes_v1.playlist.PlaylistLoader
@@ -23,6 +24,11 @@ class MainActivity : AppCompatActivity() {
 
 //     Bottom nav
     private lateinit var bottomNavigationView: BottomNavigationView
+
+    private val homeFragment = HomeFragment()
+    private val favoritesFragment = FavoritesFragment()
+    private val profileFragment = ProfileFragment()
+    private val historyFragment = HistoryFragment()
 
     @SuppressLint("SetTextI18n", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +48,8 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { menuItem ->
             when(menuItem.itemId){
                 R.id.nav_home -> {
-                    replaceFragment(HomeFragment())
+//                    replaceFragment(HomeFragment())
+                    switchTo(homeFragment)
                     true
                 }
                 R.id.nav_history, R.id.nav_favorites, R.id.nav_profile -> {
@@ -63,7 +70,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        replaceFragment(HomeFragment())
+        if (savedInstanceState == null) {
+            replaceFragment(homeFragment)
+
+        }
 
     }
 
@@ -71,5 +81,11 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).commit()
 
     }
+    private fun switchTo(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
+    }
+
 
 }

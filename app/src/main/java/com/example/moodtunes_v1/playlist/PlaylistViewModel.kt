@@ -1,13 +1,8 @@
 package com.example.moodtunes_v1.playlist
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moodtunes_v1.favorites.FavoritesRepository
-import com.example.moodtunes_v1.user_auth.AuthService
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -26,21 +21,23 @@ class PlaylistViewModel(
     val playlists: StateFlow<List<Playlist>> = _playlists
 
 
-    fun fetchPlaylistMetadata(playlistIds: List<String>) {
+    fun fetchPlaylistMetadata(playlists: List<Playlist>) {
         viewModelScope.launch {
-            val result = playlistIds.associateWith { id ->
+            val result = playlists.associate { playlist ->
                 try {
-                    val url = YouTubeFetcher.getFirstVideoUrl(id)
+                    val id = YouTubeFetcher.extractPlaylistId(playlist.url)
+                    val firstVideoUrl = YouTubeFetcher.getFirstVideoUrl(id)
                     val title = YouTubeFetcher.getPlaylistTitle(id)
 
-                    if (url.isBlank() || title.isBlank()) {
-                        android.util.Log.w("MetadataFetch", "Missing data for $id — url: $url, title: $title")
+                    if (firstVideoUrl.isBlank() || title.isBlank()) {
+                        android.util.Log.w("MetadataFetch", "Missing data for $id — url: $firstVideoUrl, title: $title")
                     }
 
-                    url to title
+                    playlist.url to (firstVideoUrl to title)
                 } catch (e: Exception) {
+                    val id = YouTubeFetcher.extractPlaylistId(playlist.url)
                     android.util.Log.e("MetadataFetch", "Error fetching metadata for $id: ${e.message}")
-                    "" to "Unknown Playlist"
+                    playlist.url to ("" to "Unknown Playlist")
                 }
             }
             _playlistInfo.value = result
@@ -49,8 +46,11 @@ class PlaylistViewModel(
 
     fun toggleFavorite(playlist: Playlist) {
         viewModelScope.launch {
-            repository.toggleFavorite(playlist)
-            _playlists.value = repository.getPlaylistsByMood(playlist.mood)
+            val updated = playlist.copy(isFavorite = !playlist.isFavorite)
+            repository.toggleFavorite(updated)
+            _playlists.value = _playlists.value.map {
+                if (it.url == updated.url) updated else it
+            }
         }
     }
 
@@ -64,11 +64,18 @@ class PlaylistViewModel(
     fun fetchFavoritesFromFireStore() {
         viewModelScope.launch {
             val remoteFavorites = repository.getFavoritesFromFireStore()
-            _playlists.value = remoteFavorites
+            val enriched = repository.enrichWithFavorites(remoteFavorites)
+            _playlists.value = enriched
 
-            val ids = remoteFavorites.map { YouTubeFetcher.extractPlaylistId(it.url) }
-            fetchPlaylistMetadata(ids)
-
+            fetchPlaylistMetadata(enriched)
         }
     }
+
+    fun setPlaylists(playlists: List<Playlist>) {
+        viewModelScope.launch {
+            val enriched = repository.enrichWithFavorites(playlists)
+            _playlists.value = enriched
+        }
+    }
+
 }
