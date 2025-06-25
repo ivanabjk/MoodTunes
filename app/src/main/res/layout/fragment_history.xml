@@ -107,31 +107,6 @@
                         android:paddingTop="8dp"
                         android:paddingBottom="8dp" />
                 </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:text="@string/genre"
-                        android:textColor="#333"
-                        android:textStyle="bold" />
-
-                    <Spinner
-                        android:id="@+id/spinnerGenreFilter"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:minHeight="48dp"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp" />
-                </LinearLayout>
             </LinearLayout>
 
             <TextView
