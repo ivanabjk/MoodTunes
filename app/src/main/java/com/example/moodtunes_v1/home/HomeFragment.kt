@@ -162,6 +162,7 @@ class HomeFragment : Fragment() {
         "happy" -> "happy_emoji.json"
         "sad" -> "sad_emoji.json"
         "angry" -> "angry_emoji.json"
+        "calm" -> "calm_emoji.json"
         else -> null
     }
 
