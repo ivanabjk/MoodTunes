@@ -8,7 +8,8 @@ data class Playlist(
     @PrimaryKey val url: String,
     var mood: String,
     var genre: String,
-    var isFavorite: Boolean = false
+    var isFavorite: Boolean = false,
+    val userEmail: String = ""
 ){
     constructor() : this("", "", "", false)
 }

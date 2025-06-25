@@ -9,12 +9,15 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.moodtunes_v1.R
 import com.example.moodtunes_v1.databinding.FragmentHistoryBinding
 import com.example.moodtunes_v1.playlist.PlaylistFragment
+import kotlinx.coroutines.launch
 
 class HistoryFragment : Fragment() {
 
@@ -83,14 +86,18 @@ class HistoryFragment : Fragment() {
             }
         }
 
-        lifecycleScope.launchWhenStarted {
-            viewModel.historyEntries.collect { entries ->
-                val moods = entries.map { it.detectedMood }.distinct()
-                updateMoodOptions(moods, currentMood)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.historyEntries.collect { entries ->
+                    val moods = entries.map { it.detectedMood }.distinct()
+                    updateMoodOptions(moods, currentMood)
 
-                val filtered = if (currentMood == "All") entries else entries.filter { it.detectedMood == currentMood }
-                historyAdapter.updateData(filtered)
-                binding.tvEmpty.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+                    val filtered = if (currentMood == "All") entries
+                    else entries.filter { it.detectedMood == currentMood }
+
+                    historyAdapter.updateData(filtered)
+                    binding.tvEmpty.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+                }
             }
         }
     }

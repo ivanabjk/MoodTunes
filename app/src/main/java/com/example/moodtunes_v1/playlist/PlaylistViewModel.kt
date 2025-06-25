@@ -54,12 +54,6 @@ class PlaylistViewModel(
         }
     }
 
-    fun fetchPlaylistsByMood(mood: String) {
-        viewModelScope.launch {
-            _playlists.value = repository.getPlaylistsByMood(mood)
-        }
-    }
-
 
     fun fetchFavoritesFromFireStore() {
         viewModelScope.launch {

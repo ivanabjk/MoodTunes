@@ -15,6 +15,7 @@ import java.util.Locale
 
 class HistoryAdapter(
     private var entries: List<HistoryEntry>,
+//    private val onViewPlaylistsClick: (List<Playlist>, String) -> Unit
     private val onViewPlaylistsClick: (List<Playlist>, String) -> Unit
 ) : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
 
@@ -41,17 +42,13 @@ class HistoryAdapter(
             onViewPlaylistsClick(entry.playlists, entry.detectedMood)
         }
 
-//        // Optional: justify alignment for Android O+
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            holder.tvUserInput.justificationMode = ConstraintSet.Layout.JUSTIFICATION_MODE_INTER_WORD
-//        }
     }
 
     override fun getItemCount(): Int = entries.size
 
     @SuppressLint("NotifyDataSetChanged")
     fun updateData(newEntries: List<HistoryEntry>) {
-        entries = newEntries
+        entries = newEntries.sortedByDescending { it.timestamp }
         notifyDataSetChanged()
     }
 

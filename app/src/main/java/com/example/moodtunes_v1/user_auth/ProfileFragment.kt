@@ -12,13 +12,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.example.moodtunes_v1.MainActivity
 import com.example.moodtunes_v1.R
 import com.example.moodtunes_v1.databinding.FragmentProfileBinding
+import com.example.moodtunes_v1.playlist.MoodTunesDatabase
 import com.example.moodtunes_v1.user_preference.MoodGenreAdapter
-import com.example.moodtunes_v1.user_preference.MoodGenres
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
@@ -27,6 +30,8 @@ class ProfileFragment : Fragment() {
 
     private lateinit var moodGenreAdapter: MoodGenreAdapter
     private lateinit var authService: AuthService
+
+    private val dao by lazy { MoodTunesDatabase.getDatabase(requireContext()).playlistDao() }
 
     private val viewModel: ProfileViewModel by viewModels {
         ProfileViewModelFactory(authService, FirebaseFirestore.getInstance())
@@ -51,14 +56,6 @@ class ProfileFragment : Fragment() {
     }
 
     private val db = FirebaseFirestore.getInstance()
-    private val moodGenreList = listOf(
-        MoodGenres("Happy", listOf("Pop", "Rock")),
-        MoodGenres("Sad", listOf("Indie", "Acoustic")),
-        MoodGenres("Calm", listOf("Lo-Fi", "Jazz")),
-        MoodGenres("Angry", listOf("Metal", "Techno"))
-    )
-
-    private val defaultMoodGenres = moodGenreList.associate { it.mood to it.genres }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -74,7 +71,7 @@ class ProfileFragment : Fragment() {
         _binding = FragmentProfileBinding.bind(view)
 
         authService = AuthService(requireContext()) // Initialize when context is available
-        val userId = authService.getUserId()
+        val userId = authService.getEmailFromFireStoreAuth()
 
         // Observe email updates dynamically
         viewModel.userEmail.observe(viewLifecycleOwner) { email ->
@@ -115,8 +112,15 @@ class ProfileFragment : Fragment() {
             binding.rvMoodGenres.adapter = moodGenreAdapter
 
             viewModel.fetchUserPreferences(userId)
+//            viewModel.moodGenres.observe(viewLifecycleOwner) { genres ->
+//                moodGenreAdapter.updateData(genres)
+//            }
+            val moodOrder = listOf("Happy", "Sad", "Angry", "Calm")
             viewModel.moodGenres.observe(viewLifecycleOwner) { genres ->
-                moodGenreAdapter.updateData(genres)
+                val sorted = moodOrder.mapNotNull { mood ->
+                    genres.find { it.mood == mood }
+                }
+                moodGenreAdapter.updateData(sorted)
             }
         } else {
             Log.e("ProfileFragment", "User ID is null, cannot fetch data.")
@@ -125,6 +129,7 @@ class ProfileFragment : Fragment() {
 
         binding.btnLogout.setOnClickListener {
             authService.logout()
+            context?.startActivity(Intent(context, MainActivity::class.java))
             requireActivity().finish()
         }
     }
@@ -133,11 +138,23 @@ class ProfileFragment : Fragment() {
         val userDocRef = db.collection("user_preferences").document(userId)
 
         userDocRef.get().addOnSuccessListener { document ->
+
             if (!document.exists()) {
-                val initialData = mapOf("email" to authService.getEmail(), "moodGenres" to defaultMoodGenres)
-                userDocRef.set(initialData)
-                    .addOnSuccessListener { Log.d("FireStore", "Initialized default genres!") }
-                    .addOnFailureListener { Log.e("FireStore", "Error initializing preferences", it) }
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val moods = listOf("Happy", "Sad", "Angry", "Calm")
+                    val moodGenres = moods.associateWith { mood ->
+                        dao.getPlaylistsByMoodForUser(mood, userId).map { it.genre }.distinct()
+                    }
+
+                    val initialData = mapOf(
+                        "email" to authService.getEmail(),
+                        "moodGenres" to moodGenres
+                    )
+
+                    userDocRef.set(initialData)
+                        .addOnSuccessListener { Log.d("FireStore", "Initialized default genres from PlaylistLoader") }
+                        .addOnFailureListener { Log.e("FireStore", "Error initializing genres", it) }
+                }
             }
         }
     }

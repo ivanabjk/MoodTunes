@@ -4,10 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.moodtunes_v1.MainActivity
+import com.example.moodtunes_v1.playlist.PlaylistDao
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.firestore.FirebaseFirestore
 
 class AuthService(private val context: Context) {
 
@@ -36,7 +38,8 @@ class AuthService(private val context: Context) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    sharedPref.setEmail(email)
+                    val actualEmail = auth.currentUser?.email
+                    if (actualEmail != null) sharedPref.setEmail(actualEmail)
                     sharedPref.setLogged(true)
 
                     Log.d(
@@ -46,6 +49,10 @@ class AuthService(private val context: Context) {
 
                     onResult("Success")
                     context.startActivity(Intent(context, MainActivity::class.java))
+//                    val intent = Intent(context, MainActivity::class.java).apply {
+//                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+//                    }
+//                    context.startActivity(intent)
                 } else {
                     val message = when (val exception = task.exception) {
                         is FirebaseAuthInvalidCredentialsException -> "Invalid login credentials."
@@ -60,19 +67,22 @@ class AuthService(private val context: Context) {
         auth.signOut()
         sharedPref.setLogged(false)
         sharedPref.setEmail(null)
-        context.startActivity(Intent(context, MainActivity::class.java))
+        FirebaseFirestore.getInstance().terminate()
+
     }
 
     fun getEmail(): String? {
         return sharedPref.getEmail()
     }
 
-    fun getUserId(): String? {
-        return auth.currentUser?.uid ?: return null
+    fun getEmailFromFireStoreAuth(): String? {
+        return auth.currentUser?.email
     }
 
     fun isLoggedIn(): Boolean {
         return sharedPref.isLogged() // Uses shared preferences to verify login state
     }
+
+
 
 }

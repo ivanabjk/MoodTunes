@@ -26,7 +26,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class PlaylistFragment : Fragment() {
 
@@ -66,7 +65,8 @@ class PlaylistFragment : Fragment() {
             emptyMap(),
             onItemClick = { playlist ->
                 val playlistId = YouTubeFetcher.extractPlaylistId(playlist.url)
-                val firstVideoUrl = viewModel.playlistInfo.value[playlistId]?.first ?: return@PlaylistAdapter
+                val firstVideoUrl =
+                    viewModel.playlistInfo.value[playlistId]?.first ?: return@PlaylistAdapter
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(firstVideoUrl)).apply {
                     setPackage("com.google.android.youtube")
                     addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
@@ -94,7 +94,7 @@ class PlaylistFragment : Fragment() {
             viewModel.fetchPlaylistMetadata(restored)
 
             sessionViewModel.clear()
-        }else{
+        } else {
             fetchPlaylists(mood)
 
         }
@@ -120,49 +120,60 @@ class PlaylistFragment : Fragment() {
         val db = MoodTunesDatabase.getDatabase(requireContext())
         val playlistDao = db.playlistDao()
 
+
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-            val playlists = playlistDao.getPlaylistsByMood(mood)
+
+            val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
+            val playlists = playlistDao.getPlaylistsByMoodInclusive(mood, email)
+
+            val newPlaylists = mutableListOf<Playlist>()
+            for (playlist in playlists) {
+                val exists = playlistDao.exists(playlist.url)
+                if (!exists) {
+                    newPlaylists.add(playlist.copy(userEmail = email))
+                }
+                Log.d("PlaylistInsert", "Skipping insert for existing: ${playlist.url}")
+            }
+            playlistDao.insertPlaylists(newPlaylists)
+
             if (playlists.isEmpty()) {
                 binding.tvMoodTitle.text = "No playlists found for this mood 😢"
                 return@launch
-            } else{
+            } else {
                 val userInput = arguments?.getString("USER_INPUT").orEmpty()
                 val detectedMood = mood // already passed in
                 val timestamp = System.currentTimeMillis()
 
-                val historyEntry = HistoryEntry(
-                    userInput = userInput,
-                    detectedMood = detectedMood,
-                    timestamp = timestamp,
-                    playlists = playlists // your DAO result
-                )
+                if(email != ""){
+                    val historyEntry = HistoryEntry(
+                        userInput = userInput,
+                        detectedMood = detectedMood,
+                        timestamp = timestamp,
+                        playlists = playlists // your DAO result
+                    )
 
-                val email = FirebaseAuth.getInstance().currentUser?.email ?: return@launch
+                    val historyRef = FirebaseFirestore.getInstance()
+                        .collection("user_history")
+                        .document(email)
+                        .collection("history")
+                        .document() // auto-ID
 
-                val historyRef = FirebaseFirestore.getInstance()
-                    .collection("user_history")
-                    .document(email)
-                    .collection("history")
-                    .document() // auto-ID
-
-                historyRef.set(historyEntry)
-                    .addOnSuccessListener {
-                        Log.d("History", "Saved history successfully for $email with input: $userInput")
-                    }
-                    .addOnFailureListener {
-                        Log.e("History", "Failed to save history", it)
-                    }
-
-
+                    historyRef.set(historyEntry)
+                        .addOnSuccessListener {
+                            Log.d(
+                                "History",
+                                "Saved history successfully for $email with input: $userInput"
+                            )
+                        }
+                        .addOnFailureListener {
+                            Log.e("History", "Failed to save history", it)
+                        }
+                }
 
             }
 
             viewModel.setPlaylists(playlists)
-
-//            val ids = playlists.map { YouTubeFetcher.extractPlaylistId(it.url) }
             viewModel.fetchPlaylistMetadata(playlists)
-
-
 
         }
     }

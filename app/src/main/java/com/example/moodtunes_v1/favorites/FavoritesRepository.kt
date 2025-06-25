@@ -16,11 +16,14 @@ class FavoritesRepository(
     private val auth = FirebaseAuth.getInstance()
 
     suspend fun toggleFavorite(playlist: Playlist) {
-        playlistDao.updateFavoriteStatus(playlist.url, playlist.isFavorite)
+//        playlistDao.updateFavoriteStatus(playlist.url, playlist.isFavorite)
 
         val email = auth.currentUser?.email ?: return
         val playlistId = YouTubeFetcher.extractPlaylistId(playlist.url)
         Log.d("Favorites", "Saving to FireStore using ID: $playlistId")
+
+        val updated = playlist.copy(userEmail = email)
+        playlistDao.updateFavoriteStatus(updated.url, updated.isFavorite)
 
         val docRef = firestore
             .collection("user_favorites")
@@ -46,14 +49,6 @@ class FavoritesRepository(
         }
     }
 
-    suspend fun getLocalFavorites(): List<Playlist> {
-        return playlistDao.getFavoritePlaylists()
-    }
-
-    suspend fun getPlaylistsByMood(mood: String): List<Playlist> {
-        return playlistDao.getPlaylistsByMood(mood)
-    }
-
     suspend fun getFavoritesFromFireStore(): List<Playlist> {
         val email = auth.currentUser?.email ?: return emptyList()
         val snapshot = firestore
@@ -66,7 +61,8 @@ class FavoritesRepository(
         return snapshot.documents.mapNotNull { it.toObject(Playlist::class.java) }
     }
     suspend fun enrichWithFavorites(playlists: List<Playlist>): List<Playlist> {
-        val favoriteIds = playlistDao.getAllFavoritePlaylistIds() // returns List<String> or Set<String>
+        val email = auth.currentUser?.email ?: return playlists
+        val favoriteIds = playlistDao.getAllFavoritePlaylistIdsForUser(email) // returns List<String> or Set<String>
         return playlists.map { it.copy(isFavorite = it.url in favoriteIds) }
     }
 }

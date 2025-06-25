@@ -24,6 +24,8 @@ import com.example.moodtunes_v1.playlist.Playlist
 import com.example.moodtunes_v1.playlist.PlaylistAdapter
 import com.example.moodtunes_v1.playlist.PlaylistViewModel
 import com.example.moodtunes_v1.playlist.PlaylistViewModelFactory
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
@@ -86,9 +88,17 @@ class FavoritesFragment : Fragment() {
                 startActivity(intent)
             },
             favoriteToggleListener = object : OnFavoriteToggleListener {
+
+                private var fetchJob: Job? = null
+
                 override fun onFavoriteToggled(playlist: Playlist) {
                     viewModel.toggleFavorite(playlist)
-                    viewModel.fetchFavoritesFromFireStore()
+
+                    fetchJob?.cancel()
+                    fetchJob = viewLifecycleOwner.lifecycleScope.launch {
+                        delay(250)
+                        viewModel.fetchFavoritesFromFireStore()
+                    }
                 }
             }
         )
@@ -175,7 +185,12 @@ class FavoritesFragment : Fragment() {
                     (selectedGenre == "All" || playlist.genre == selectedGenre)
         }
 
-        playlistAdapter.updateData(filtered, viewModel.playlistInfo.value)
+        val visibleInfo = viewModel.playlistInfo.value.filterKeys { url ->
+            filtered.any { it.url == url }
+        }
+        playlistAdapter.updateData(filtered, visibleInfo)
+
+//        playlistAdapter.updateData(filtered, viewModel.playlistInfo.value)
     }
 
     private fun updateFilterOptions() {
