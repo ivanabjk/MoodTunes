@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -15,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.moodtunes_v1.R
 import com.example.moodtunes_v1.databinding.FragmentPlaylistBinding
 import com.example.moodtunes_v1.favorites.FavoritesRepository
 import com.example.moodtunes_v1.history.HistoryEntry
@@ -105,6 +107,10 @@ class PlaylistFragment : Fragment() {
                     playlistAdapter.updateData(playlists, metadata)
                 }
             }
+        }
+
+        requireView().findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
+            requireActivity().supportFragmentManager.popBackStack()
         }
 
     }
