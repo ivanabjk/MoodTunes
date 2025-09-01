@@ -3,7 +3,11 @@ package com.example.moodtunes_v1.user_auth
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.moodtunes_v1.R
 
@@ -12,10 +16,10 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var nameEditText: EditText
     private lateinit var emailEditText: EditText
     private lateinit var passwordEditText: EditText
-    private lateinit var phoneEditText: EditText
     private lateinit var registerButton: Button
     private lateinit var loginRedirect: TextView
     private lateinit var togglePasswordButton: ImageView
+    private lateinit var confirmPasswordEditText: EditText
 
     private var isPasswordVisible = false
 
@@ -30,10 +34,10 @@ class RegisterActivity : AppCompatActivity() {
         nameEditText = findViewById(R.id.nameEditText)
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
-        phoneEditText = findViewById(R.id.phoneEditText)
         registerButton = findViewById(R.id.registerButton)
         loginRedirect = findViewById(R.id.loginRedirect)
         togglePasswordButton = findViewById(R.id.togglePasswordButton)
+        confirmPasswordEditText = findViewById(R.id.confirmPasswordEditText)
 
         togglePasswordButton.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
@@ -46,11 +50,14 @@ class RegisterActivity : AppCompatActivity() {
         registerButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString()
+            val confirmPassword = confirmPasswordEditText.text.toString()
 
             if (!isValidEmail(email)) {
                 emailEditText.error = "Invalid email"
             } else if (password.length < 6) {
                 passwordEditText.error = "Password must be at least 6 characters"
+            } else if (password != confirmPassword) {
+                confirmPasswordEditText.error = "Passwords do not match."
             } else {
                 registerUser(email, password)
             }

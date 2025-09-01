@@ -54,7 +54,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="482dp"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="24dp">
@@ -110,22 +110,23 @@
                 <ImageView
                     android:id="@+id/togglePasswordButton"
                     android:layout_width="48dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:contentDescription="Toggle password visibility"
                     android:padding="12dp"
                     android:src="@android:drawable/ic_menu_view" />
             </LinearLayout>
 
             <EditText
-                android:id="@+id/phoneEditText"
+                android:id="@+id/confirmPasswordEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="16dp"
                 android:background="@android:drawable/edit_text"
-                android:hint="Enter Phone"
-                android:inputType="phone"
+                android:hint="Confirm Password"
+                android:inputType="textPassword"
                 android:padding="12dp"
                 android:textSize="16sp" />
+
 
             <Button
                 android:id="@+id/registerButton"
@@ -138,6 +139,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="18sp" />
 
+
             <TextView
                 android:id="@+id/loginRedirect"
                 android:layout_width="wrap_content"
@@ -147,6 +149,8 @@
                 android:textColor="@color/headerBorder"
                 android:textSize="16sp" />
         </LinearLayout>
+
+
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
 

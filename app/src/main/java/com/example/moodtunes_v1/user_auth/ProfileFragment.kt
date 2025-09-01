@@ -2,15 +2,16 @@ package com.example.moodtunes_v1.user_auth
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -50,8 +51,36 @@ class ProfileFragment : Fragment() {
                     .placeholder(R.drawable.default_profile_pic)
                     .circleCrop()
                     .into(binding.profileImage)
-            }
 
+                // Convert to Base64 and save to Firestore
+                val bitmap =
+                    MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, imageUri)
+                val outputStream = java.io.ByteArrayOutputStream()
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 60, outputStream)
+                val base64String = android.util.Base64.encodeToString(
+                    outputStream.toByteArray(),
+                    android.util.Base64.DEFAULT
+                )
+
+                val userId = authService.getEmailFromFireStoreAuth()
+                val userDocRef = FirebaseFirestore.getInstance()
+                    .collection("user_preferences")
+                    .document(userId ?: return@let)
+
+                userDocRef.get().addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        userDocRef.update("profileImageBase64", base64String)
+                            .addOnSuccessListener {
+                                Log.d("ProfileUpload", "Base64 image saved to Firestore")
+                            }
+                            .addOnFailureListener {
+                                Log.e("ProfileUpload", "Failed to save Base64 image", it)
+                            }
+                    } else {
+                        Log.w("ProfileUpload", "User preferences not initialized yet—skipping image save")
+                    }
+                }
+            }
         }
     }
 
@@ -82,25 +111,34 @@ class ProfileFragment : Fragment() {
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             pickImageLauncher.launch(intent)
         }
-        val savedUri = SharedPref(requireContext()).getProfileImageUri()
-        savedUri?.let {
-            Glide.with(requireContext())
-                .load(Uri.parse(it))
-                .placeholder(R.drawable.default_profile_pic)
-                .circleCrop()
-                .into(binding.profileImage)
-        }
-
-        // Testing FireStore connection
-        db.collection("test").document("sample")
-            .set(mapOf("testField" to "Hello Firebase!"))
-            .addOnSuccessListener { Log.d("FireStore", "Success!") }
-            .addOnFailureListener { Log.e("FireStore", "Error", it) }
-
+//        val savedUri = SharedPref(requireContext()).getProfileImageUri()
+//        savedUri?.let {
+//            Glide.with(requireContext())
+//                .load(Uri.parse(it))
+//                .placeholder(R.drawable.default_profile_pic)
+//                .circleCrop()
+//                .into(binding.profileImage)
+//        }
 
         //Recycler view
         if (userId != null) {
             initializeUserPreferences(userId)
+
+            // For Profile Image
+            val userDocRef =
+                FirebaseFirestore.getInstance().collection("user_preferences").document(userId)
+            userDocRef.get().addOnSuccessListener { document ->
+                val base64String = document.getString("profileImageBase64")
+                if (!base64String.isNullOrEmpty()) {
+                    val imageBytes =
+                        android.util.Base64.decode(base64String, android.util.Base64.DEFAULT)
+                    Glide.with(requireContext())
+                        .load(imageBytes)
+                        .placeholder(R.drawable.default_profile_pic)
+                        .circleCrop()
+                        .into(binding.profileImage)
+                }
+            }
 
             moodGenreAdapter = MoodGenreAdapter(
                 emptyList(),
@@ -128,9 +166,15 @@ class ProfileFragment : Fragment() {
 
 
         binding.btnLogout.setOnClickListener {
-            authService.logout()
-            context?.startActivity(Intent(context, MainActivity::class.java))
-            requireActivity().finish()
+            authService.logout {
+                Handler(Looper.getMainLooper()).postDelayed({
+                    requireActivity().run {
+                        startActivity(Intent(this, MainActivity::class.java))
+                        finish()
+                    }
+                }, 300)
+
+            }
         }
     }
 
@@ -152,8 +196,19 @@ class ProfileFragment : Fragment() {
                     )
 
                     userDocRef.set(initialData)
-                        .addOnSuccessListener { Log.d("FireStore", "Initialized default genres from PlaylistLoader") }
-                        .addOnFailureListener { Log.e("FireStore", "Error initializing genres", it) }
+                        .addOnSuccessListener {
+                            Log.d(
+                                "FireStore",
+                                "Initialized default genres from PlaylistLoader"
+                            )
+                        }
+                        .addOnFailureListener {
+                            Log.e(
+                                "FireStore",
+                                "Error initializing genres",
+                                it
+                            )
+                        }
                 }
             }
         }
@@ -174,7 +229,8 @@ class ProfileFragment : Fragment() {
         FirebaseFirestore.getInstance().collection("user_preferences").document(userId)
             .get()
             .addOnSuccessListener { document ->
-                val moodGenres = document.get("moodGenres") as? Map<String, List<String>> ?: emptyMap()
+                val moodGenres =
+                    document.get("moodGenres") as? Map<String, List<String>> ?: emptyMap()
                 val updatedGenres = moodGenres[mood]?.filter { it != genre } ?: listOf()
 
                 FirebaseFirestore.getInstance().collection("user_preferences").document(userId)
@@ -186,6 +242,7 @@ class ProfileFragment : Fragment() {
                     .addOnFailureListener { Log.e("FireStore", "Error removing genre", it) }
             }
     }
+
 //
 //    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
 //        currentFocus?.let {

@@ -6,6 +6,7 @@ import android.util.Patterns
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.moodtunes_v1.MainActivity
 import com.example.moodtunes_v1.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -80,6 +81,9 @@ class LoginActivity : AppCompatActivity() {
     private fun handleLoginResult(result: String?) {
         if (result == "Success") {
             showToast("Logged in successfully")
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
             finish() // Prevent user from navigating back to login
         } else {
             showToast(result ?: "Login failed")

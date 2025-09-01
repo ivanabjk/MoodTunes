@@ -3,13 +3,15 @@ package com.example.moodtunes_v1.user_auth
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.example.moodtunes_v1.MainActivity
-import com.example.moodtunes_v1.playlist.PlaylistDao
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AuthService(private val context: Context) {
 
@@ -48,7 +50,7 @@ class AuthService(private val context: Context) {
                     )
 
                     onResult("Success")
-                    context.startActivity(Intent(context, MainActivity::class.java))
+//                    context.startActivity(Intent(context, MainActivity::class.java))
                 } else {
                     val message = when (val exception = task.exception) {
                         is FirebaseAuthInvalidCredentialsException -> "Invalid login credentials."
@@ -59,12 +61,11 @@ class AuthService(private val context: Context) {
             }
     }
 
-    fun logout() {
+    fun logout(onComplete: () -> Unit) {
         auth.signOut()
         sharedPref.setLogged(false)
         sharedPref.setEmail(null)
-        FirebaseFirestore.getInstance().terminate()
-
+        onComplete()
     }
 
     fun getEmail(): String? {
@@ -78,7 +79,6 @@ class AuthService(private val context: Context) {
     fun isLoggedIn(): Boolean {
         return sharedPref.isLogged() // Uses shared preferences to verify login state
     }
-
 
 
 }
