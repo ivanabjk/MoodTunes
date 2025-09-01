@@ -3,9 +3,11 @@ package com.example.moodtunes_v1.playlist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moodtunes_v1.favorites.FavoritesRepository
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class PlaylistViewModel(
     private val repository: FavoritesRepository
@@ -19,6 +21,8 @@ class PlaylistViewModel(
 
     private val _playlists = MutableStateFlow<List<Playlist>>(emptyList())
     val playlists: StateFlow<List<Playlist>> = _playlists
+
+    private val fetchedUrlsByGenre = mutableMapOf<String, MutableSet<String>>()
 
 
     fun fetchPlaylistMetadata(playlists: List<Playlist>) {
@@ -71,5 +75,28 @@ class PlaylistViewModel(
             _playlists.value = enriched
         }
     }
+
+    fun markFetched(genre: String, urls: List<String>) {
+        val set = fetchedUrlsByGenre.getOrPut(genre) { mutableSetOf() }
+        set.addAll(urls)
+    }
+
+    fun hasBeenFetched(genre: String, url: String): Boolean {
+        return fetchedUrlsByGenre[genre]?.contains(url) == true
+    }
+
+    suspend fun getPreferredGenresForMood(
+        db: FirebaseFirestore,
+        email: String,
+        mood: String
+    ): List<String> {
+        val snapshot = db.collection("user_preferences")
+            .document(email)
+            .get()
+            .await()
+
+        val moodGenresMap = snapshot.get("moodGenres") as? Map<*, *> ?: emptyMap<Any, Any>()
+        return (moodGenresMap[mood] as? List<*>)?.filterIsInstance<String>()
+            ?.map { it.trim().lowercase() } ?: emptyList()    }
 
 }

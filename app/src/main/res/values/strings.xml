@@ -11,5 +11,5 @@
     <string name="mood">Mood:</string>
     <string name="genre">Genre:</string>
     <string name="favorites">Favorites</string>
-    <string name="filter_history">Filter history</string>
+    <string name="filter_history">Filter</string>
 </resources>

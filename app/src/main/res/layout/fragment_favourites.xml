@@ -50,7 +50,6 @@
                 android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="8dp"
                 android:minHeight="48dp"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp">
@@ -69,6 +68,18 @@
                     android:layout_height="24dp"
                     android:contentDescription="@string/filter_icon"
                     android:src="@drawable/ic_filter_list" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/searchView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Search favorite playlist" />
+
             </LinearLayout>
 
 

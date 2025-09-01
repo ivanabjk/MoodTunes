@@ -49,10 +49,6 @@ class AuthService(private val context: Context) {
 
                     onResult("Success")
                     context.startActivity(Intent(context, MainActivity::class.java))
-//                    val intent = Intent(context, MainActivity::class.java).apply {
-//                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-//                    }
-//                    context.startActivity(intent)
                 } else {
                     val message = when (val exception = task.exception) {
                         is FirebaseAuthInvalidCredentialsException -> "Invalid login credentials."

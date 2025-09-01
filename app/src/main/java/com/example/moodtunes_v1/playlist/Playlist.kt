@@ -6,10 +6,11 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "playlists")
 data class Playlist(
     @PrimaryKey val url: String,
-    var mood: String,
-    var genre: String,
+    val title: String,
+    val mood: String,
+    val genre: String,
     var isFavorite: Boolean = false,
     val userEmail: String = ""
 ){
-    constructor() : this("", "", "", false)
+    constructor() : this("", "", "", "", false)
 }

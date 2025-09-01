@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -21,11 +22,13 @@ import com.example.moodtunes_v1.databinding.FragmentPlaylistBinding
 import com.example.moodtunes_v1.favorites.FavoritesRepository
 import com.example.moodtunes_v1.history.HistoryEntry
 import com.example.moodtunes_v1.history.HistorySessionViewModel
+import com.example.moodtunes_v1.history.generateIdFromInput
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PlaylistFragment : Fragment() {
 
@@ -83,21 +86,7 @@ class PlaylistFragment : Fragment() {
         binding.rvPlaylists.layoutManager = LinearLayoutManager(requireContext())
         binding.rvPlaylists.adapter = playlistAdapter
 
-
-        val restored = sessionViewModel.selectedPlaylists.value
-        Log.d("PlaylistFragment", "Restored playlists count: ${restored.size}")
-        if (restored.isNotEmpty()) {
-            viewModel.setPlaylists(restored)
-            binding.tvMoodTitle.text = "For your $mood mood!"
-
-//            val ids = restored.map { YouTubeFetcher.extractPlaylistId(it.url) }
-            viewModel.fetchPlaylistMetadata(restored)
-
-            sessionViewModel.clear()
-        } else {
-            fetchPlaylists(mood)
-
-        }
+        fetchPlaylists(mood)
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -121,23 +110,58 @@ class PlaylistFragment : Fragment() {
         val playlistDao = db.playlistDao()
 
 
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
             val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
-            val playlists = playlistDao.getPlaylistsByMoodInclusive(mood, email)
 
-            val newPlaylists = mutableListOf<Playlist>()
-            for (playlist in playlists) {
-                val exists = playlistDao.exists(playlist.url)
-                if (!exists) {
-                    newPlaylists.add(playlist.copy(userEmail = email))
+            val rawGenres = viewModel.getPreferredGenresForMood(FirebaseFirestore.getInstance(), email, mood)
+            val normalizedGenres = rawGenres.map { it.trim().lowercase() }
+
+            Log.d("GenreFilter", "Normalized user genres for $mood: $normalizedGenres")
+
+
+            val youtubePlaylists = mutableListOf<Playlist>()
+
+            for (genre in normalizedGenres) {
+                val urls = YouTubeFetcher.searchPlaylistsByGenre(genre, 2)
+                for (url in urls) {
+
+                    val existing = playlistDao.getAllPlaylists().find { it.url == url }
+
+                    val playlistId = YouTubeFetcher.extractPlaylistId(url)
+                    val title = try {
+                        YouTubeFetcher.getPlaylistTitle(playlistId)
+                    } catch (e: Exception) {
+                        Log.e("PlaylistFetch", "Failed to fetch title for $playlistId", e)
+                        "Unknown Title"
+                    }
+
+
+                    Log.d("PlaylistFetch", "Fetched title for $playlistId: $title")
+
+
+
+                    youtubePlaylists.add(
+                        Playlist(
+                            url = url,
+                            title = title,
+                            mood = mood,
+                            genre = genre,
+                            userEmail = email,
+                            isFavorite = existing?.isFavorite == true
+                        )
+                    )
                 }
-                Log.d("PlaylistInsert", "Skipping insert for existing: ${playlist.url}")
-            }
-            playlistDao.insertPlaylists(newPlaylists)
 
-            if (playlists.isEmpty()) {
-                binding.tvMoodTitle.text = "No playlists found for this mood 😢"
+            }
+
+            playlistDao.insertPlaylists(youtubePlaylists)
+
+
+            if (youtubePlaylists.isEmpty()) {
+                withContext(Dispatchers.Main) {
+                    binding.tvMoodTitle.text = "No playlists found for this mood 😢"
+                }
                 return@launch
             } else {
                 val userInput = arguments?.getString("USER_INPUT").orEmpty()
@@ -149,14 +173,15 @@ class PlaylistFragment : Fragment() {
                         userInput = userInput,
                         detectedMood = detectedMood,
                         timestamp = timestamp,
-                        playlists = playlists // your DAO result
+                        playlists = youtubePlaylists // your DAO result
                     )
 
+                    val docId = generateIdFromInput(historyEntry.userInput)
                     val historyRef = FirebaseFirestore.getInstance()
                         .collection("user_history")
                         .document(email)
                         .collection("history")
-                        .document() // auto-ID
+                        .document(docId) // auto-ID
 
                     historyRef.set(historyEntry)
                         .addOnSuccessListener {
@@ -171,9 +196,8 @@ class PlaylistFragment : Fragment() {
                 }
 
             }
-
-            viewModel.setPlaylists(playlists)
-            viewModel.fetchPlaylistMetadata(playlists)
+            viewModel.setPlaylists(youtubePlaylists)
+            viewModel.fetchPlaylistMetadata(youtubePlaylists)
 
         }
     }

@@ -15,8 +15,8 @@ import java.util.Locale
 
 class HistoryAdapter(
     private var entries: List<HistoryEntry>,
-//    private val onViewPlaylistsClick: (List<Playlist>, String) -> Unit
-    private val onViewPlaylistsClick: (List<Playlist>, String) -> Unit
+    private val onViewPlaylistsClick: (List<Playlist>, String) -> Unit,
+    private val onDeleteClick: (HistoryEntry) -> Unit
 ) : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
 
     inner class HistoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -24,6 +24,7 @@ class HistoryAdapter(
         val tvMood = itemView.findViewById<TextView>(R.id.tvMood)
         val tvTimestamp = itemView.findViewById<TextView>(R.id.tvTimestamp)
         val btnViewPlaylists = itemView.findViewById<ImageButton>(R.id.btnViewPlaylists)
+        val btnDeleteEntry = itemView.findViewById<ImageButton>(R.id.btnDeleteEntry)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
@@ -40,6 +41,9 @@ class HistoryAdapter(
 
         holder.btnViewPlaylists.setOnClickListener {
             onViewPlaylistsClick(entry.playlists, entry.detectedMood)
+        }
+        holder.btnDeleteEntry.setOnClickListener {
+            onDeleteClick(entry)
         }
 
     }

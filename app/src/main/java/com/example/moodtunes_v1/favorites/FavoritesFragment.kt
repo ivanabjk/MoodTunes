@@ -8,8 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -55,6 +57,8 @@ class FavoritesFragment : Fragment() {
         viewModel.fetchFavoritesFromFireStore()
 
         var filtersInitialized = false
+
+        var currentSearchQuery = ""
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -106,6 +110,13 @@ class FavoritesFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.rvPlaylists)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = playlistAdapter
+
+        val searchEditText = view.findViewById<EditText>(R.id.searchView)
+
+        searchEditText.doOnTextChanged { text, _, _, _ ->
+            currentSearchQuery = text.toString()
+            applyFilters(currentSearchQuery)
+        }
 
 
         val filterHeader = view.findViewById<View>(R.id.filterHeader)
@@ -173,7 +184,7 @@ class FavoritesFragment : Fragment() {
 
     }
 
-    private fun applyFilters() {
+    private fun applyFilters(searchQuery: String = "") {
         val moodSpinner = view?.findViewById<Spinner>(R.id.spinnerMoodFilter)
         val genreSpinner = view?.findViewById<Spinner>(R.id.spinnerGenreFilter)
 
@@ -182,7 +193,9 @@ class FavoritesFragment : Fragment() {
 
         val filtered = allFavorites.filter { playlist ->
             (selectedMood == "All" || playlist.mood == selectedMood) &&
-                    (selectedGenre == "All" || playlist.genre == selectedGenre)
+                    (selectedGenre == "All" || playlist.genre == selectedGenre)&&
+                    playlist.title.contains(searchQuery, ignoreCase = true)
+
         }
 
         val visibleInfo = viewModel.playlistInfo.value.filterKeys { url ->

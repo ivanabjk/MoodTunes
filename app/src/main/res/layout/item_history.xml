@@ -1,72 +1,86 @@
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_margin="8dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="8dp"
     android:elevation="4dp"
     android:foreground="?attr/selectableItemBackground"
     app:cardCornerRadius="12dp">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="wrap_content">
 
+        <!-- Delete Icon Floating Top-Right -->
+        <ImageButton
+            android:id="@+id/btnDeleteEntry"
+            android:layout_width="33dp"
+            android:layout_height="32dp"
+            android:layout_gravity="end|top"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete entry"
+            android:src="@drawable/icon_delete"
+            android:layout_margin="3dp"
+            app:tint="@color/black" />
 
-        <!-- User Input -->
-        <TextView
-            android:id="@+id/tvUserInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="I feel like dancing under neon lights."
-            android:textSize="18sp"
-            android:textAlignment="viewStart"
-            android:layout_marginTop="4dp"
-            android:textColor="#222" />
-
+        <!-- Main Content Block -->
         <LinearLayout
-            android:id="@+id/metaRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="8dp">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <!-- Mood + Timestamp stacked vertically -->
-            <LinearLayout
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/tvUserInput"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:text="I feel like dancing under neon lights."
+                android:textSize="18sp"
+                android:textColor="#222"
+                android:textAlignment="viewStart"
+                android:layout_marginTop="4dp" />
 
-                <TextView
-                    android:id="@+id/tvMood"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Energetic"
-                    android:textSize="16sp" />
+            <LinearLayout
+                android:id="@+id/metaRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp">
 
-                <TextView
-                    android:id="@+id/tvTimestamp"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Jun 22, 10:12 PM"
-                    android:textSize="14sp"
-                    android:textColor="#777" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvMood"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Energetic"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/tvTimestamp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Jun 22, 10:12 PM"
+                        android:textSize="14sp"
+                        android:textColor="#777" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btnViewPlaylists"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/circle_background"
+                    android:contentDescription="View playlists"
+                    android:padding="8dp"
+                    android:src="@drawable/baseline_arrow_forward_24"
+                    app:tint="@color/white" />
             </LinearLayout>
-
-            <!-- Playlists icon button on the right -->
-            <ImageButton
-                android:id="@+id/btnViewPlaylists"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/circle_background"
-                android:contentDescription="View playlists"
-                android:padding="8dp"
-                android:src="@drawable/baseline_arrow_forward_24"
-                app:tint="@color/white" />
-
         </LinearLayout>
-    </LinearLayout>
+    </FrameLayout>
 </androidx.cardview.widget.CardView>

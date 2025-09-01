@@ -48,14 +48,14 @@ interface PlaylistDao {
     suspend fun getPlaylistsByMoodInclusive(mood: String, userEmail: String): List<Playlist>
 
     @Query("""
-  SELECT * FROM playlists
-  WHERE mood = :mood
-  AND genre IN (:genres)
-  AND (userEmail = :userEmail OR userEmail IS NULL OR userEmail = '')
+    SELECT * FROM playlists
+    WHERE LOWER(mood) = LOWER(:mood)
+    AND LOWER(genre) IN (:normalizedGenres)
+    AND (userEmail = :userEmail OR userEmail IS NULL OR userEmail = '')
 """)
     suspend fun getPlaylistsByMoodAndGenres(
         mood: String,
-        genres: List<String>,
+        normalizedGenres: List<String>,
         userEmail: String
     ): List<Playlist>
 

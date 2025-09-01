@@ -1,5 +1,6 @@
 package com.example.moodtunes_v1.playlist
 
+import android.net.Uri
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -73,5 +74,64 @@ object YouTubeFetcher {
     }
     fun getThumbnailUrl(videoId: String): String {
         return "https://img.youtube.com/vi/$videoId/mqdefault.jpg"
+    }
+
+    suspend fun searchPlaylistByGenre(genreQuery: String): String {
+        val query = Uri.encode("$genreQuery playlist")
+        val apiUrl = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=playlist&maxResults=1&q=$query&key=$API_KEY"
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val connection = URL(apiUrl).openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                connection.connect()
+
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
+                val jsonResponse = JSONObject(response)
+                val itemsArray = jsonResponse.optJSONArray("items")
+
+                if (itemsArray != null && itemsArray.length() > 0) {
+                    val firstItem = itemsArray.getJSONObject(0)
+                    val playlistId = firstItem.getJSONObject("id").getString("playlistId")
+                    return@withContext "https://www.youtube.com/playlist?list=$playlistId"
+                }
+            } catch (e: Exception) {
+                Log.e("YouTubeFetcher", "Error searching playlist: ${e.message}")
+            }
+            return@withContext ""
+        }
+    }
+
+    suspend fun searchPlaylistsByGenre(genreQuery: String, maxResults: Int = 3): List<String> {
+        val query = Uri.encode("$genreQuery playlist")
+        val apiUrl = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=playlist&maxResults=$maxResults&q=$query&key=$API_KEY"
+
+        return withContext(Dispatchers.IO) {
+            val playlistUrls = mutableListOf<String>()
+            try {
+                val connection = URL(apiUrl).openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                connection.connect()
+
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
+                val jsonResponse = JSONObject(response)
+                val itemsArray = jsonResponse.optJSONArray("items")
+
+                if (itemsArray != null) {
+                    for (i in 0 until itemsArray.length()) {
+                        val item = itemsArray?.getJSONObject(i)
+                        val playlistId = item?.getJSONObject("id")?.getString("playlistId")
+                        playlistUrls.add("https://www.youtube.com/playlist?list=$playlistId")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("YouTubeFetcher", "Error fetching playlists for genre: $genreQuery → ${e.message}")
+            }
+            return@withContext playlistUrls
+        }
     }
 }
