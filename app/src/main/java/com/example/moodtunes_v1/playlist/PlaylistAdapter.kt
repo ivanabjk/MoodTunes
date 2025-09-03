@@ -47,7 +47,7 @@ class PlaylistAdapter(
 
         Glide.with(holder.itemView.context)
             .load(thumbnailUrl)
-            .placeholder(R.drawable.sample_image)
+            .placeholder(R.drawable.loading)
             .into(holder.thumbnailImageView)
 
         holder.itemView.setOnClickListener {

@@ -117,6 +117,9 @@ dependencies {
     implementation ("androidx.navigation:navigation-ui-ktx:2.7.7")
 
 
+    //Splash Screen
+    implementation("androidx.core:core-splashscreen:1.0.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
