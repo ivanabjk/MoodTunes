@@ -2,12 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="headerBackground">#DCC6E0</color>
-    <color name="headerBorder">#5A3E6B</color>
+<!--    <color name="headerBackground">#DCC6E0</color>-->
+<!--    <color name="headerBorder">#5A3E6B</color>-->
     
     <color name="purple">#5B099B</color>
     <color name="orange">#FFA62E</color>
+    <color name="lightOrange">#FFDBBE</color>
     <color name="red">#F8253C</color>
+    <color name="lightRed">#FFBFBF</color>
     <color name="darkPurple">#38005F</color>
 
 </resources>

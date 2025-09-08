@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.moodtunes_v1.R
 import com.google.android.material.chip.Chip
@@ -44,7 +45,10 @@ class MoodGenreAdapter(
             val chip = Chip(holder.itemView.context).apply {
                 text = genre
                 isCloseIconVisible = true
-                chipBackgroundColor = ColorStateList.valueOf(R.color.headerBackground)
+                chipBackgroundColor = ColorStateList.valueOf(
+                    ContextCompat.getColor(context, R.color.lightOrange)
+                )
+
                 setTextColor(Color.BLACK)
 
                 isFocusableInTouchMode = true
@@ -86,7 +90,10 @@ class MoodGenreAdapter(
         val addChip = Chip(holder.itemView.context).apply {
             text = "+"
             isCloseIconVisible = false // No remove option
-            chipBackgroundColor = ColorStateList.valueOf(R.color.headerBorder)
+            chipBackgroundColor = ColorStateList.valueOf(
+                ContextCompat.getColor(context, R.color.orange)
+            )
+
             setTextColor(Color.WHITE)
 
             setOnClickListener {

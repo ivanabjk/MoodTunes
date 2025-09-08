@@ -68,7 +68,7 @@
             android:layout_gravity="end|bottom"
             android:contentDescription="Favorite icon"
             android:src="@drawable/favorite_outline"
-            app:tint="#FF0000" />
+            app:tint="@color/red" />
 
 
     </LinearLayout>

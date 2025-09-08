@@ -7,7 +7,7 @@
                 android:topRightRadius="18dp"
                 android:bottomLeftRadius="0dp"
                 android:bottomRightRadius="0dp"/>
-            <solid android:color="@color/headerBorder"/>
+            <solid android:color="@color/purple"/>
         </shape>
     </item>
 
@@ -18,7 +18,7 @@
                 android:topRightRadius="18dp"
                 android:bottomLeftRadius="0dp"
                 android:bottomRightRadius="0dp"/>
-            <solid android:color="@color/headerBackground"/>
+            <solid android:color="@color/purple"/>
         </shape>
     </item>
 </layer-list>

@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -82,6 +83,7 @@ class HomeFragment : Fragment() {
             // Hide the mood animation
             binding.moodAnimation.cancelAnimation()
             binding.moodAnimation.visibility = View.GONE
+            binding.moodImage.visibility = View.GONE
 
         }
 
@@ -120,6 +122,7 @@ class HomeFragment : Fragment() {
         viewModel.detectedMood.observe(viewLifecycleOwner) { mood ->
             if (mood.isNotBlank()) {
                 displayMoodAnimation(mood)
+                displayMoodImage(mood)
             }
         }
 
@@ -165,6 +168,14 @@ class HomeFragment : Fragment() {
         "calm" -> "calm_emoji.json"
         else -> null
     }
+    private fun getMoodImage(mood: String): String? = when (mood.lowercase()) {
+        "happy" -> "happy_text"
+        "sad" -> "sad_text"
+        "angry" -> "angry_text"
+        "calm" -> "happy_text"
+        else -> null
+    }
+
 
     private fun displayMoodAnimation(mood: String) {
         val file = getMoodAnimationFile(mood)
@@ -179,6 +190,24 @@ class HomeFragment : Fragment() {
             }
         }
     }
+    private fun displayMoodImage(mood: String) {
+        val imageName = getMoodImage(mood) // e.g. "happy_text"
+        binding.moodImage.apply {
+            if (imageName != null) {
+                val resId = context.resources.getIdentifier(imageName, "drawable", context.packageName)
+                if (resId != 0) {
+                    setImageResource(resId)
+                    visibility = View.VISIBLE
+                } else {
+                    Log.w("MoodImage", "Drawable not found for: $imageName")
+                    visibility = View.GONE
+                }
+            } else {
+                visibility = View.GONE
+            }
+        }
+    }
+
 
     private fun launchPlaylist(mood: String) {
         if (mood.isBlank()) return

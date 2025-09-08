@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Header Background -->
-    <item android:drawable="@color/headerBackground"/>
+    <item android:drawable="@color/purple"/>
 
     <!-- Bottom Border -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/headerBorder"/> <!--  Darker shade for border -->
+            <solid android:color="@color/darkPurple"/> <!--  Darker shade for border -->
             <size android:height="6dp"/> <!--  Set thickness (adjust as needed) -->
         </shape>
         <padding android:top="50dp"/> <!--  Ensures border stays at the bottom -->

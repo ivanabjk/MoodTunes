@@ -1,15 +1,31 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.MoodTunes_v1" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-<!--        <item name="colorPrimary">@color/purple</item> -->
-<!--        <item name="colorPrimaryDark">@color/darkPurple</item>-->
-<!--        <item name="colorAccent">@color/orange</item>-->
-<!--        -->
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/purple</item>
+        <item name="colorPrimaryVariant">@color/darkPurple</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+
+        <!-- Secondary colors -->
+        <item name="colorSecondary">@color/orange</item>
+        <item name="colorSecondaryVariant">@color/red</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+
+        <!-- Background / Surface -->
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorOnSurface">@android:color/black</item>
+
+        <item name="android:statusBarColor">@color/purple</item>
 
     </style>
 
     <style name="Theme.MoodTunes_v1" parent="Base.Theme.MoodTunes_v1" />
+
+    <style name="App.Custom.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+
+        <item name="android:color">@color/orange</item>
+    </style>
 
     <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/purple</item>
