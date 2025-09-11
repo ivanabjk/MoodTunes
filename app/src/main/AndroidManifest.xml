@@ -32,7 +32,6 @@
         </activity>
         <activity android:name=".user_auth.LoginActivity"
             android:launchMode="singleTop"/>
-<!--        <activity android:name=".user_auth.ProfileActivity" />-->
         <activity android:name=".user_auth.RegisterActivity" />
 
         <meta-data

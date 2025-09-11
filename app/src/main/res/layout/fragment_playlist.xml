@@ -7,24 +7,6 @@
     android:autoLink="web"
     android:linksClickable="true">
 
-    <!-- Title: Playlist Suggestions -->
-
-    <!-- Mood Card with RecyclerView -->
-
-<!--    <ImageButton-->
-<!--        android:id="@+id/btnReload"-->
-<!--        android:layout_width="77dp"-->
-<!--        android:layout_height="57dp"-->
-<!--        android:layout_marginStart="332dp"-->
-<!--        android:layout_marginTop="4dp"-->
-<!--        android:background="@android:color/transparent"-->
-<!--        android:contentDescription="Reload"-->
-<!--        android:padding="8dp"-->
-<!--        android:src="@drawable/baseline_cached_24"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:tint="@color/black" />-->
-
     <ImageButton
         android:id="@+id/btnBack"
         android:layout_width="74dp"
@@ -44,10 +26,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Playlist Suggestions"
+        android:text="Playlists"
         android:textColor="#1E1E1E"
-        android:textSize="24sp"
+        android:textSize="36sp"
         android:textStyle="bold"
+        android:fontFamily="@font/oregano_regular"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

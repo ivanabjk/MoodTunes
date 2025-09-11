@@ -153,7 +153,7 @@ class ProfileFragment : Fragment() {
 //            viewModel.moodGenres.observe(viewLifecycleOwner) { genres ->
 //                moodGenreAdapter.updateData(genres)
 //            }
-            val moodOrder = listOf("Happy", "Sad", "Angry", "Calm")
+            val moodOrder = listOf("Happy", "Sad", "Angry")
             viewModel.moodGenres.observe(viewLifecycleOwner) { genres ->
                 val sorted = moodOrder.mapNotNull { mood ->
                     genres.find { it.mood == mood }
@@ -185,7 +185,7 @@ class ProfileFragment : Fragment() {
 
             if (!document.exists()) {
                 viewLifecycleOwner.lifecycleScope.launch {
-                    val moods = listOf("Happy", "Sad", "Angry", "Calm")
+                    val moods = listOf("Happy", "Sad", "Angry")
                     val moodGenres = moods.associateWith { mood ->
                         dao.getPlaylistsByMoodForUser(mood, userId).map { it.genre }.distinct()
                     }

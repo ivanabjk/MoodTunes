@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.moodtunes_v1.R
 import com.example.moodtunes_v1.databinding.FragmentPlaylistBinding
 import com.example.moodtunes_v1.favorites.FavoritesRepository
@@ -61,7 +62,6 @@ class PlaylistFragment : Fragment() {
         val mood = arguments?.getString("MOOD").orEmpty()
 
         binding.tvMoodTitle.text = "For your $mood mood!"
-
 
         playlistAdapter = PlaylistAdapter(
             emptyList(),

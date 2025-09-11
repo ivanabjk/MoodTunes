@@ -16,19 +16,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!--        <pl.droidsonroids.gif.GifImageView-->
-        <!--            android:id="@+id/loadingGif"-->
-        <!--            android:layout_width="64dp"-->
-        <!--            android:layout_height="64dp"-->
-        <!--            android:layout_centerInParent="true"-->
-        <!--            android:layout_gravity="center"-->
-        <!--            android:layout_marginHorizontal="16dp"-->
-        <!--            android:layout_marginTop="24dp"-->
-        <!--            android:layout_marginBottom="8dp"-->
-        <!--            android:scaleType="centerInside"-->
-        <!--            android:src="@drawable/loading"-->
-        <!--            android:visibility="gone"-->
-        <!--            tools:ignore="MissingClass" />-->
 
         <ImageView
             android:id="@+id/ivPlaylistImage"
@@ -36,7 +23,7 @@
             android:layout_height="180dp"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"
-            android:src="@drawable/loading" />
+            android:src="@drawable/loading"/>
 
 
 
