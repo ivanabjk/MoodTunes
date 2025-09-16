@@ -19,6 +19,10 @@ class ProfileViewModel(private val authService: AuthService, private val db: Fir
         _userEmail.value = authService.getEmail()
     }
 
+    fun setMoodGenres(updated: List<MoodGenres>) {
+        _moodGenres.postValue(updated)
+    }
+
     fun fetchUserPreferences(userId: String) {
         db.collection("user_preferences").document(userId)
             .get()
@@ -29,7 +33,8 @@ class ProfileViewModel(private val authService: AuthService, private val db: Fir
 
                     Log.d("FirestoreData", "Retrieved: $convertedMoodGenres") // Debug log
 
-                    _moodGenres.value = convertedMoodGenres // Update LiveData
+//                    _moodGenres.value = convertedMoodGenres // Update LiveData
+                    _moodGenres.postValue(convertedMoodGenres)
                 } else {
                     Log.e("FirestoreData", "No document found for user $userId")
                 }

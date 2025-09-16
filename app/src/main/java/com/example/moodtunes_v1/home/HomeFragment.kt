@@ -105,17 +105,31 @@ class HomeFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
         viewModel.emotionsLiveData.observe(viewLifecycleOwner) { emotions ->
-            binding.btnSeePlaylists.isEnabled = emotions.isNotEmpty()
+            val isEnabled = emotions.isNotEmpty()
+            binding.btnSeePlaylists.isEnabled = isEnabled
+
+            val orange = ContextCompat.getColor(requireContext(), R.color.orange)
+            val lightOrange = ContextCompat.getColor(requireContext(), R.color.lightOrange)
+
+            binding.btnSeePlaylists.setBackgroundColor(if (isEnabled) orange else lightOrange)
+
         }
 
         viewModel.isSpeaking.observe(viewLifecycleOwner) { isSpeaking ->
             if (isSpeaking) {
-                binding.etMoodInput.setText("Speaking...")
+                binding.etMoodInput.setHint("Speaking...")
                 binding.fab.setImageResource(R.drawable.ic_stop)
             } else {
                 binding.fab.setImageResource(R.drawable.ic_mic)
                 val userText = viewModel.userText.value ?: ""
                 binding.etMoodInput.setText(userText)
+            }
+        }
+
+        viewModel.spokenTextLiveData.observe(viewLifecycleOwner) { spoken ->
+            if (spoken.isNotBlank()) {
+                binding.etMoodInput.setText(spoken)
+                viewModel.saveUserText(spoken) // Persist it
             }
         }
 
@@ -177,17 +191,57 @@ class HomeFragment : Fragment() {
     }
 
 
+//    private fun displayMoodAnimation(mood: String) {
+//        val file = getMoodAnimationFile(mood)
+//
+//        binding.moodAnimationLoader.visibility = View.VISIBLE
+//        binding.moodAnimation.visibility = View.GONE
+//
+//        binding.moodAnimation.apply {
+//            if (file != null) {
+//                setAnimation(file)
+//                addLottieOnCompositionLoadedListener {
+//                    binding.moodAnimationLoader.visibility = View.GONE
+//                    visibility = View.VISIBLE
+//                    playAnimation()
+//                }
+//
+//            } else {
+//                cancelAnimation()
+//                visibility = View.GONE
+//                binding.moodAnimationLoader.visibility = View.GONE
+//
+//            }
+//        }
+//
+//        binding.moodAnimation.animate()
+//            .alpha(1f)
+//            .setDuration(300)
+//            .withStartAction {
+//                binding.moodAnimation.alpha = 0f
+//                binding.moodAnimation.visibility = View.VISIBLE
+//                binding.moodAnimationLoader.visibility = View.GONE
+//            }
+//            .start()
+//    }
+
     private fun displayMoodAnimation(mood: String) {
         val file = getMoodAnimationFile(mood)
-        binding.moodAnimation.apply {
-            if (file != null) {
-                setAnimation(file)
-                visibility = View.VISIBLE
-                playAnimation()
-            } else {
-                cancelAnimation()
-                visibility = View.GONE
+
+        binding.moodAnimation.cancelAnimation()
+        binding.moodAnimation.visibility = View.GONE
+        binding.moodAnimationLoader.visibility = View.VISIBLE
+
+        if (file != null) {
+            binding.moodAnimation.setAnimation(file)
+            binding.moodAnimation.addLottieOnCompositionLoadedListener {
+                binding.moodAnimationLoader.visibility = View.GONE
+                binding.moodAnimation.visibility = View.VISIBLE
+                binding.moodAnimation.playAnimation()
             }
+        } else {
+            binding.moodAnimationLoader.visibility = View.GONE
+            binding.moodAnimation.visibility = View.GONE
         }
     }
     private fun displayMoodImage(mood: String) {
@@ -214,7 +268,8 @@ class HomeFragment : Fragment() {
 
         val fragment = PlaylistFragment.newInstance(
             userInput = viewModel.userText.value.orEmpty(),
-            mood = mood
+            mood = mood,
+            fromHome = true
         )
 
         requireActivity()

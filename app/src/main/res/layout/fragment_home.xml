@@ -62,6 +62,18 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <ProgressBar
+                android:id="@+id/moodAnimationLoader"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:visibility="gone"
+                android:indeterminate="true"
+                android:tint="@color/orange"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
             <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/moodAnimation"
                 android:layout_width="match_parent"
@@ -106,7 +118,7 @@
         android:enabled="false"
         android:text="See Playlists"
         android:textColor="@color/black"
-        android:backgroundTint="@color/orange"
+        android:backgroundTint="@color/lightOrange"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

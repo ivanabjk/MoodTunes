@@ -40,12 +40,10 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
+
+//        installSplashScreen()
+
         super.onCreate(savedInstanceState)
-
-        // Splash screen
-        Thread.sleep(3000)
-        installSplashScreen()
-
         setContentView(R.layout.activity_main)
 
         // Room DB and Playlist Loader
@@ -98,7 +96,7 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             replaceFragment(homeFragment)
-
+            bottomNavigationView.selectedItemId = R.id.nav_home
         }
 
     }
@@ -128,6 +126,11 @@ class MainActivity : AppCompatActivity() {
         playlistDao.clearAllFavorites()
         playlistDao.setFavoritesByUrls(urls)
     }
-
+    override fun onResume() {
+        super.onResume()
+        if (authService.isLoggedIn()) {
+            bottomNavigationView.selectedItemId = R.id.nav_home
+        }
+    }
 
 }

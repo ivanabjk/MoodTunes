@@ -55,12 +55,11 @@ class HistoryFragment : Fragment() {
             emptyList(),
             onViewPlaylistsClick = { playlists, mood ->
                 sessionViewModel.setSelected(playlists)
-                val fragment = PlaylistFragment().apply {
-                    arguments = Bundle().apply {
-                        putString("MOOD", mood)
-                        // You could serialize playlists and pass them if PlaylistFragment supports it
-                    }
-                }
+                val fragment = PlaylistFragment.newInstance(
+                    userInput = "",
+                    mood = mood,
+                    fromHome = false
+                )
                 requireActivity().supportFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, fragment)
                     .addToBackStack(null)

@@ -4,16 +4,26 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.text.Editable
+import android.text.InputFilter
 import android.text.InputType
+import android.text.TextWatcher
+import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.moodtunes_v1.R
+import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 
@@ -42,49 +52,34 @@ class MoodGenreAdapter(
         holder.genresChipGroup.removeAllViews()
 
         moodGenre.genres.forEachIndexed { index, genre ->
-            val chip = Chip(holder.itemView.context).apply {
+
+            val genreChip = Chip(holder.itemView.context).apply {
                 text = genre
                 isCloseIconVisible = true
                 chipBackgroundColor = ColorStateList.valueOf(
                     ContextCompat.getColor(context, R.color.lightOrange)
                 )
-
                 setTextColor(Color.BLACK)
-
-                isFocusableInTouchMode = true
-                inputType = InputType.TYPE_CLASS_TEXT
-                imeOptions = EditorInfo.IME_ACTION_DONE
+                chipStrokeWidth = 2f
+                chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.lightOrange))
+                elevation = 6f
 
                 setOnClickListener {
-                    requestFocus()
-                    showKeyboard(this)
-                }
-
-                setOnFocusChangeListener { _, hasFocus ->
-                    if (!hasFocus) {
+                    showTopDialog(holder.itemView.context, moodGenre.mood, genre) { newText ->
                         val updatedGenres = moodGenre.genres.toMutableList()
-                        updatedGenres[index] = this.text.toString().trim()
-                        onGenreChanged(moodGenre.mood, updatedGenres) // Save changes when clicking outside
+                        updatedGenres[index] = newText
+                        onGenreChanged(moodGenre.mood, updatedGenres)
+//                        notifyDataSetChanged()
+                        notifyItemChanged(position)
                     }
                 }
 
-                setOnEditorActionListener { _, actionId, _ ->
-                    if (actionId == EditorInfo.IME_ACTION_DONE) {
-                        val updatedGenres = moodGenre.genres.toMutableList()
-                        updatedGenres[index] = this.text.toString().trim()
-
-                        onGenreChanged(moodGenre.mood, updatedGenres) // Save to FireStore
-                        notifyDataSetChanged() // Refresh RecyclerView
-                        true
-                    } else false
-                }
-
-
                 setOnCloseIconClickListener {
-                    removeGenreFromUI(moodGenre.mood, genre)
+                    onGenreRemoved(moodGenre.mood, genre)
                 }
             }
-            holder.genresChipGroup.addView(chip)
+            holder.genresChipGroup.addView(genreChip)
+
         }
         // Create and add the "+" chip at the end
         val addChip = Chip(holder.itemView.context).apply {
@@ -94,14 +89,28 @@ class MoodGenreAdapter(
                 ContextCompat.getColor(context, R.color.orange)
             )
 
+            chipStrokeWidth = 2f
+            chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.orange))
+            elevation = 6f
+
             setTextColor(Color.WHITE)
 
             setOnClickListener {
-                val newGenreName = "genre${moodGenre.genres.size + 1}" // Generate genre name dynamically
-                val updatedGenres = moodGenre.genres.toMutableList().apply { add(newGenreName) }
+                showTopDialog(holder.itemView.context, moodGenre.mood,"genre${moodGenre.genres.size + 1}") { newText ->
+                    val trimmed = newText.trim()
+                    val currentGenres = moodGenre.genres
+                    val isDuplicate = currentGenres.any { it.equals(trimmed, ignoreCase = true) }
 
-                onGenreChanged(moodGenre.mood, updatedGenres) // Persist the new genre in FireStore
-                notifyDataSetChanged() // Refresh RecyclerView to reflect changes
+                    if (isDuplicate) {
+                        Toast.makeText(holder.itemView.context, "Genre already exists", Toast.LENGTH_SHORT).show()
+                        return@showTopDialog
+                    }
+
+                    val updatedGenres = currentGenres.toMutableList().apply { add(trimmed) }
+                    onGenreChanged(moodGenre.mood, updatedGenres)
+                    notifyItemChanged(position)
+
+                }
             }
         }
 
@@ -109,20 +118,103 @@ class MoodGenreAdapter(
 
     }
 
-    private fun removeGenreFromUI(mood: String, genre: String) {
-        onGenreRemoved(mood, genre) // Notify ProfileActivity to handle FireStore update
-    }
-
     override fun getItemCount(): Int = moodGenreList.size
+
     @SuppressLint("NotifyDataSetChanged")
     fun updateData(newData: List<MoodGenres>) {
+//        val oldList = moodGenreList // capture BEFORE overwriting
+//        moodGenreList = newData
+//
+//        val diff = oldList.zip(newData).mapIndexedNotNull { index, (old, new) ->
+//            if (old.genres != new.genres || old.mood != new.mood) index else null
+//        }
+//
+//        if (diff.isEmpty()) {
+//            notifyDataSetChanged() // fallback if no diff detected
+//        } else {
+//            diff.forEach { notifyItemChanged(it) }
+//        }
+
+        val diffCallback = MoodGenreDiffCallback(moodGenreList, newData)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
         moodGenreList = newData
-        notifyDataSetChanged() // Ensure RecyclerView updates properly
+        diffResult.dispatchUpdatesTo(this)
+
+
+//        moodGenreList = newData
+//        notifyDataSetChanged() // Ensure RecyclerView updates properly
+
     }
 
-    private fun showKeyboard(view: View) {
-        val imm = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+    private fun showTopDialog(context: Context, mood: String, initialText: String, onSave: (String) -> Unit) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_genre, null)
+        val editText = dialogView.findViewById<EditText>(R.id.editGenreInput)
+        val btnSave = dialogView.findViewById<Button>(R.id.btnSave)
+        val btnCancel = dialogView.findViewById<Button>(R.id.btnCancel)
+        val previewChip = dialogView.findViewById<Chip>(R.id.previewChip)
+
+        previewChip.text = initialText
+
+        editText.setText(initialText)
+        editText.setSelection(initialText.length)
+
+        editText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                previewChip.text = s?.toString()?.trim()
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
+        editText.filters = arrayOf(InputFilter.LengthFilter(20))
+
+        editText.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                btnSave.performClick()
+                true
+            } else {
+                false
+            }
+        }
+
+        val dialog = AlertDialog.Builder(context)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        dialog.setCanceledOnTouchOutside(true)
+        dialog.window?.attributes?.windowAnimations = R.style.DialogSlideAnimation
+
+        btnSave.setOnClickListener {
+            val newText = editText.text.toString().trim()
+
+            if (newText.isEmpty()) {
+                editText.error = "Genre cannot be empty"
+                return@setOnClickListener
+            }
+            val currentMoodGenres = moodGenreList.find { it.mood == mood }?.genres ?: emptyList()
+            val isDuplicate = currentMoodGenres.any {
+                it.equals(newText, ignoreCase = true) && !it.equals(initialText, ignoreCase = true)
+            }
+
+            if (isDuplicate) {
+                editText.error = "Genre already exists"
+                return@setOnClickListener
+            }
+
+            onSave(newText)
+            dialog.dismiss()
+        }
+
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.window?.setGravity(Gravity.TOP)
+        dialog.show()
     }
+
 
 }

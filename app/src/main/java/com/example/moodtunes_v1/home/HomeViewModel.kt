@@ -20,6 +20,9 @@ class HomeViewModel(
     private val state: SavedStateHandle
 ) : ViewModel() {
 
+    private val voiceToTextParser = VoiceToTextParser(context)
+    private val emotionClassifier = EmotionClassifier(context)
+
     private val _emotionsLiveData = MutableLiveData<String>()
     val emotionsLiveData: LiveData<String> get() = _emotionsLiveData
 
@@ -32,9 +35,20 @@ class HomeViewModel(
     private val _detectedMood = state.getLiveData("detectedMood", "")
     val detectedMood: LiveData<String> get() = _detectedMood
 
+    val spokenTextLiveData = MutableLiveData<String>()
 
-    private val voiceToTextParser = VoiceToTextParser(app)
-    private val emotionClassifier = EmotionClassifier(context)
+    init {
+        viewModelScope.launch {
+            voiceToTextParser.stateFlow.collect { parserState ->
+                if (parserState.spokenText.isNotBlank()) {
+                    spokenTextLiveData.postValue(parserState.spokenText)
+                    saveUserText(parserState.spokenText)
+                }
+                _isSpeaking.postValue(parserState.isSpeaking)
+            }
+        }
+    }
+
 
     fun startListening() {
         voiceToTextParser.startListening()

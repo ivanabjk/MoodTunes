@@ -109,6 +109,7 @@ class PlaylistFragment : Fragment() {
         val db = MoodTunesDatabase.getDatabase(requireContext())
         val playlistDao = db.playlistDao()
 
+        val fromHome = arguments?.getBoolean("FROM_HOME", false) ?: false
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
@@ -168,7 +169,7 @@ class PlaylistFragment : Fragment() {
                 val detectedMood = mood // already passed in
                 val timestamp = System.currentTimeMillis()
 
-                if(email != ""){
+                if(fromHome && email.isNotBlank()){
                     val historyEntry = HistoryEntry(
                         userInput = userInput,
                         detectedMood = detectedMood,
@@ -208,10 +209,13 @@ class PlaylistFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(userInput: String, mood: String) = PlaylistFragment().apply {
-            arguments = Bundle().apply {
-                putString("USER_INPUT", userInput)
-                putString("MOOD", mood)
+        fun newInstance(userInput: String, mood: String, fromHome: Boolean = false): PlaylistFragment {
+            return PlaylistFragment().apply {
+                arguments = Bundle().apply {
+                    putString("USER_INPUT", userInput)
+                    putString("MOOD", mood)
+                    putBoolean("FROM_HOME", fromHome)
+                }
             }
         }
     }

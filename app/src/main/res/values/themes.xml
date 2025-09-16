@@ -27,10 +27,16 @@
         <item name="android:color">@color/orange</item>
     </style>
 
-    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/ic_logo_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_logo</item>
-<!--        <item name="windowSplashScreenIconBackgroundColor">@color/darkPurple</item>-->
-        <item name="postSplashScreenTheme">@style/Base.Theme.MoodTunes_v1</item>
+<!--    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">-->
+<!--        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>-->
+<!--        <item name="windowSplashScreenBackground">@color/ic_logo_background</item>-->
+<!--&lt;!&ndash;        <item name="windowSplashScreenIconBackgroundColor">@color/darkPurple</item>&ndash;&gt;-->
+<!--        <item name="postSplashScreenTheme">@style/Base.Theme.MoodTunes_v1</item>-->
+<!--    </style>-->
+
+
+    <style name="DialogSlideAnimation">
+        <item name="android:windowEnterAnimation">@anim/slide_down</item>
     </style>
+
 </resources>
