@@ -71,6 +71,7 @@ class HomeFragment : Fragment() {
             if (viewModel.isSpeaking.value == true) {
                 viewModel.stopListening()
             } else if (canRecord) {
+                context?.let { it1 -> ContextCompat.checkSelfPermission(it1, Manifest.permission.RECORD_AUDIO) } == PackageManager.PERMISSION_GRANTED
                 viewModel.startListening()
             }
         }

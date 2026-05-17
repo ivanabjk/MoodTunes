@@ -40,10 +40,11 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
-
 //        installSplashScreen()
 
         super.onCreate(savedInstanceState)
+
+
         setContentView(R.layout.activity_main)
 
         // Room DB and Playlist Loader
@@ -53,6 +54,13 @@ class MainActivity : AppCompatActivity() {
 
         authService = AuthService(this)
         //Navigation
+
+        if (!authService.isLoggedIn()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish() // Prevent user from returning to MainActivity without logging in
+            return
+        }
+
 
         val rawEmail = authService.getEmailFromFireStoreAuth()
         val userEmail = rawEmail ?: "" // Support guest mode
@@ -126,11 +134,11 @@ class MainActivity : AppCompatActivity() {
         playlistDao.clearAllFavorites()
         playlistDao.setFavoritesByUrls(urls)
     }
-    override fun onResume() {
-        super.onResume()
-        if (authService.isLoggedIn()) {
-            bottomNavigationView.selectedItemId = R.id.nav_home
-        }
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        if (authService.isLoggedIn()) {
+//            bottomNavigationView.selectedItemId = R.id.nav_home
+//        }
+//    }
 
 }

@@ -116,7 +116,7 @@ class VoiceToTextParser(
     }
 
     override fun onError(error: Int) {
-        Log.e("VoiceDebug", "Recognizer error code: $error")
+
         _state.update { it.copy(isSpeaking = false) }
 
         val message = when (error) {
@@ -127,6 +127,8 @@ class VoiceToTextParser(
             SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Permission error"
             else -> "Unknown error"
         }
+
+        Log.e("VoiceDebug", "Recognizer error code: $message")
 
         _state.update { it.copy(error = message) }
     }
