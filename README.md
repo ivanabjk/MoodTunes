@@ -27,7 +27,7 @@ MoodTunes is an Android app that uses **speech recognition** and an **integrated
 
 ## Home Screen
 - Users can **type their mood** in the search bar or **speak** using the microphone button.  
-- The AI model analyzes the input and, when the **Get Mood** button is pressed, generates the most fitting mood.  
+- When the **Get Mood** button is pressed, the AI model analyzes the input and generates the most fitting mood.
 - Currently supported moods: **Happy**, **Sad**, **Angry**  
 
 <p align="center">
