@@ -31,10 +31,10 @@ MoodTunes is an Android app that uses **speech recognition** and an **integrated
 - Currently supported moods: **Happy**, **Sad**, **Angry**  
 
 <p align="center">
-  <img src="app/src/main/assets/screenshots/HomeScreen.png" alt="Home Screen" height="550"/>
-  <img src="app/src/main/assets/screenshots/MoodHappy.png" alt="Happy Mood" height="550"/>
-  <img src="app/src/main/assets/screenshots/MoodSad.png" alt="Sad Mood" height="550"/>
-  <img src="app/src/main/assets/screenshots/MoodAngry.png" alt="Angry Mood" height="550"/>
+  <img src="app/src/main/assets/screenshots/HomeScreen.png" alt="Home Screen" height="400"/>
+  <img src="app/src/main/assets/screenshots/MoodHappy.png" alt="Happy Mood" height="400"/>
+  <img src="app/src/main/assets/screenshots/MoodSad.png" alt="Sad Mood" height="400"/>
+  <img src="app/src/main/assets/screenshots/MoodAngry.png" alt="Angry Mood" height="400"/>
 </p>
 
 ---
@@ -48,10 +48,10 @@ MoodTunes is an Android app that uses **speech recognition** and an **integrated
 - When a playlist is clicked, the user is redirected to **YouTube**, where the first song of the playlist begins playing.  
 
 <p align="center">
-  <img src="app/src/main/assets/screenshots/Playlists.png" alt="Playlists" height="550"/>
-  <img src="app/src/main/assets/screenshots/PlaylistInYoutube.png" alt="Playlist played in YouTube" height="550"/>
-  <img src="app/src/main/assets/screenshots/ProfileScreen.png" alt="Profile Screen" height="550"/>
-  <img src="app/src/main/assets/screenshots/AddGenrePreference.png" alt="Add Preference" height="550"/>
+  <img src="app/src/main/assets/screenshots/Playlists.png" alt="Playlists" height="400"/>
+  <img src="app/src/main/assets/screenshots/PlaylistInYoutube.png" alt="Playlist played in YouTube" height="400"/>
+  <img src="app/src/main/assets/screenshots/ProfileScreen.png" alt="Profile Screen" height="400"/>
+  <img src="app/src/main/assets/screenshots/AddGenrePreference.png" alt="Add Preference" height="400"/>
 </p>
 
 ---
