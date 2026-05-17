@@ -31,10 +31,10 @@ MoodTunes is an Android app that uses **speech recognition** and an **integrated
 - Currently supported moods: **Happy**, **Sad**, **Angry**  
 
 <p align="center">
-  <img src="app/src/main/assets/screenshots/HomeScreen.png" alt="Home Screen" height="450"/>
-  <img src="app/src/main/assets/screenshots/MoodHappy.png" alt="Happy Mood" height="450"/>
-  <img src="app/src/main/assets/screenshots/MoodSad.png" alt="Sad Mood" height="450"/>
-  <img src="app/src/main/assets/screenshots/MoodAngry.png" alt="Angry Mood" height="450"/>
+  <img src="app/src/main/assets/screenshots/HomeScreen.png" alt="Home Screen" height="420"/>
+  <img src="app/src/main/assets/screenshots/MoodHappy.png" alt="Happy Mood" height="420"/>
+  <img src="app/src/main/assets/screenshots/MoodSad.png" alt="Sad Mood" height="420"/>
+  <img src="app/src/main/assets/screenshots/MoodAngry.png" alt="Angry Mood" height="420"/>
 </p>
 
 ---
